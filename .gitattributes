@@ -1,0 +1,49 @@
+# ==============================================================================
+# .gitattributes — mrree-arquitectura-software (Regla 03: fin de línea y codificación)
+# ==============================================================================
+
+# Normalización por defecto a LF en todo el repositorio
+* text=auto eol=lf
+
+# Scripts para contenedores Linux y bash: obligatorio LF
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Scripts de PowerShell y Windows batch: CRLF para ejecución nativa en Windows
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Código fuente y configuraciones de texto
+*.java text eol=lf
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.properties text eol=lf
+*.editorconfig text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+*.proto text eol=lf
+*.dsl text eol=lf
+
+# Archivos binarios
+*.jar binary
+*.war binary
+*.ear binary
+*.class binary
+*.zip binary
+*.tar.gz binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

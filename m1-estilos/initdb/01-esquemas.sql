@@ -46,6 +46,10 @@ ALTER DEFAULT PRIVILEGES FOR ROLE tramites_app IN SCHEMA tramites GRANT ALL ON F
 CREATE SCHEMA IF NOT EXISTS notificaciones AUTHORIZATION notificaciones_app;
 REVOKE ALL ON SCHEMA notificaciones FROM PUBLIC;
 GRANT ALL PRIVILEGES ON SCHEMA notificaciones TO notificaciones_app;
+GRANT ALL PRIVILEGES ON SCHEMA notificaciones TO postgres;
 ALTER DEFAULT PRIVILEGES FOR ROLE notificaciones_app IN SCHEMA notificaciones GRANT ALL ON TABLES TO notificaciones_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE notificaciones_app IN SCHEMA notificaciones GRANT ALL ON SEQUENCES TO notificaciones_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE notificaciones_app IN SCHEMA notificaciones GRANT ALL ON FUNCTIONS TO notificaciones_app;
+
+GRANT ALL PRIVILEGES ON SCHEMA citas TO postgres;
+GRANT ALL PRIVILEGES ON SCHEMA tramites TO postgres;

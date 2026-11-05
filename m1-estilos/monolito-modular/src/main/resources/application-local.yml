@@ -1,0 +1,12 @@
+# Perfil 'local' para ejecución desde Eclipse en modo híbrido (regla 02)
+# Conecta a la infraestructura levantada en localhost mediante Docker Compose
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/consular?currentSchema=citas,tramites,notificaciones
+    username: postgres
+    password: postgres
+
+  mail:
+    host: localhost
+    port: 1025

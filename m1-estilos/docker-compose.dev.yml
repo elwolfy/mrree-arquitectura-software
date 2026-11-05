@@ -1,0 +1,70 @@
+name: m1
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: m1-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: consular
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./initdb/01-esquemas.sql:/docker-entrypoint-initdb.d/01-esquemas.sql:ro
+      - m1_postgres_data:/var/lib/postgresql/data
+    networks:
+      - datos
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d consular"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: m1-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - frontal
+      - datos
+
+  monolito:
+    build:
+      context: .
+      dockerfile: monolito-modular/Dockerfile
+    container_name: m1-monolito
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      CONSISTENCIA_MODO: ${CONSISTENCIA_MODO:-CP}
+      NOTIFICACIONES_CANAL: ${NOTIFICACIONES_CANAL:-CONSOLA}
+      NOTIFICACIONES_SIMULAR_FALLA: ${NOTIFICACIONES_SIMULAR_FALLA:-false}
+    ports:
+      - "8081:8081"
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  frontal:
+    name: m1_frontal
+  datos:
+    name: m1_datos
+
+volumes:
+  m1_postgres_data:
+    name: m1_postgres_data

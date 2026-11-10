@@ -15,6 +15,9 @@ Ejecuta `/crear-solucion-asignacion <AN>`. La solución será publicada a los pa
 
 ## A2 — `solucion/a2` (m2-integracion)
 
+> Generada en el prompt 08-7. En este paso solo se verifica que la rama siga vigente tras los cambios de M3 y M4 (rebase si corresponde) y que cumpla lo siguiente.
+
+
 - tramites-service: `PUT /api/tramites/{id}/observacion` (`{motivo}`) → estado `OBSERVADO`, publica `tramite.observado` (`{tramiteId, codigo, dni, email, motivo}`).
 - notificaciones-service: consumidor idempotente `notificaciones.tramite.observado` con DLQ; envía aviso.
 - `GET /api/tramites/observados` en tramites + ruta en el gateway.

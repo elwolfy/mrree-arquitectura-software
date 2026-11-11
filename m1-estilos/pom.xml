@@ -37,6 +37,7 @@
 
     <modules>
         <module>monolito-modular</module>
+        <module>comparativa-clean</module>
     </modules>
 
     <dependencyManagement>
@@ -109,6 +110,10 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <configuration>
                         <groups>integracion</groups>
+                        <includes>
+                            <include>**/*Test.java</include>
+                            <include>**/*IT.java</include>
+                        </includes>
                     </configuration>
                     <executions>
                         <execution>

@@ -9,9 +9,10 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /src
 COPY pom.xml .
 COPY monolito-modular/pom.xml monolito-modular/
-RUN mvn -q -pl monolito-modular -am dependency:go-offline
+COPY comparativa-clean/pom.xml comparativa-clean/
+RUN --mount=type=cache,target=/root/.m2 mvn -q -pl monolito-modular -am dependency:go-offline
 COPY monolito-modular/src monolito-modular/src
-RUN mvn -q -pl monolito-modular -am package -DskipTests
+RUN --mount=type=cache,target=/root/.m2 mvn -q -pl monolito-modular -am package -DskipTests
 
 # Etapa 2: Ejecución ligera
 FROM eclipse-temurin:21-jre-alpine

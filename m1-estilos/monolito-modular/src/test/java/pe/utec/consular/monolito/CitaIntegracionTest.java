@@ -95,7 +95,10 @@ class CitaIntegracionTest {
     @Test
     @DisplayName("Flujo completo: Reserva exitosa (201), duplicado (409), sin capacidad (409) y rollback por falla (500)")
     void flujoCompletoDeCitas() {
-        LocalDate fechaCita = LocalDate.now().plusDays(10);
+        LocalDate fechaCita = LocalDate.now().plusDays(7);
+        while (fechaCita.getDayOfWeek().getValue() >= 6) {
+            fechaCita = fechaCita.plusDays(1);
+        }
         LocalTime horaCita = LocalTime.of(8, 0);
 
         // 1. Catálogo de oficinas consulares

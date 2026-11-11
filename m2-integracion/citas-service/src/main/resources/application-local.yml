@@ -1,0 +1,15 @@
+# Perfil 'local' para ejecución desde Eclipse en modo híbrido (regla 02)
+# Conecta a PostgreSQL y RabbitMQ expuestos en localhost por Docker Compose
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/consular?currentSchema=citas
+    username: citas_app
+    password: citas_pwd
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: consular
+    password: consular
+

@@ -1,0 +1,11 @@
+# Perfil 'local' para ejecución desde Eclipse en modo híbrido (regla 02)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/consular?currentSchema=notificaciones
+    username: notificaciones_app
+    password: notificaciones_pwd
+
+  mail:
+    host: localhost
+    port: 1025
+

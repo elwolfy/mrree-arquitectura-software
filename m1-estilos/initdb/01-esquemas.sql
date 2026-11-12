@@ -20,6 +20,8 @@ BEGIN
 END
 $do$;
 
+GRANT ALL PRIVILEGES ON DATABASE consular TO citas_app, tramites_app, notificaciones_app;
+
 -- ------------------------------------------------------------------------------
 -- Esquema: citas
 -- ------------------------------------------------------------------------------

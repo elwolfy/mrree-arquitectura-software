@@ -1,0 +1,68 @@
+server:
+  port: 8081
+  shutdown: graceful
+
+spring:
+  application:
+    name: consular-m1-citas-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/consular?currentSchema=citas
+    username: ${DB_USERNAME:citas_app}
+    password: ${DB_PASSWORD:citas_pwd}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 2000
+      validation-timeout: 1000
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+
+  flyway:
+    enabled: true
+    schemas: citas
+    default-schema: citas
+    locations: classpath:db/migration/citas
+    create-schemas: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Configuración del cliente HTTP hacia notificaciones-service y Circuit Breaker (sección 4.3 del contrato global)
+notificaciones:
+  base-url: ${NOTIFICACIONES_URL:http://notificaciones:8084}
+  timeout-ms: ${NOTIFICACIONES_TIMEOUT_MS:2000}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      notificaciones:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+        registerHealthIndicator: true
+

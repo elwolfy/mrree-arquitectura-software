@@ -34,6 +34,7 @@ services:
       - datos
 
   monolito:
+    profiles: ["monolito"]
     build:
       context: .
       dockerfile: monolito-modular/Dockerfile
@@ -57,6 +58,57 @@ services:
       - datos
     depends_on:
       postgres:
+        condition: service_healthy
+
+  notificaciones:
+    profiles: ["microservicios"]
+    build:
+      context: .
+      dockerfile: microservicios/notificaciones-service/Dockerfile
+    container_name: m1-notificaciones
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: notificaciones_app
+      DB_PASSWORD: notificaciones_pwd
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      NOTIFICACIONES_CANAL: ${NOTIFICACIONES_CANAL:-CONSOLA}
+      NOTIFICACIONES_SIMULAR_FALLA: ${NOTIFICACIONES_SIMULAR_FALLA:-false}
+    ports:
+      - "8084:8084"
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  citas:
+    profiles: ["microservicios"]
+    build:
+      context: .
+      dockerfile: microservicios/citas-service/Dockerfile
+    container_name: m1-citas
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: citas_app
+      DB_PASSWORD: citas_pwd
+      NOTIFICACIONES_URL: http://notificaciones:8084
+    ports:
+      - "8081:8081"
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+      notificaciones:
         condition: service_healthy
 
 networks:

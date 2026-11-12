@@ -1,0 +1,66 @@
+server:
+  port: 8084
+  shutdown: graceful
+
+spring:
+  application:
+    name: consular-m1-notificaciones-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/consular?currentSchema=notificaciones
+    username: ${DB_USERNAME:notificaciones_app}
+    password: ${DB_PASSWORD:notificaciones_pwd}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 2000
+      validation-timeout: 1000
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+
+  flyway:
+    enabled: true
+    schemas: notificaciones
+    default-schema: notificaciones
+    locations: classpath:db/migration/notificaciones
+    create-schemas: true
+
+  mail:
+    host: ${MAIL_HOST:mailpit}
+    port: ${MAIL_PORT:1025}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+notificaciones:
+  canal: ${NOTIFICACIONES_CANAL:CONSOLA}
+  simular-falla: ${NOTIFICACIONES_SIMULAR_FALLA:false}
+

@@ -1,0 +1,11 @@
+# Perfil 'local' para ejecución desde Eclipse en modo híbrido (regla 02)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/consular?currentSchema=citas
+    username: citas_app
+    password: citas_pwd
+
+notificaciones:
+  base-url: http://localhost:8084
+  timeout-ms: 2000
+

@@ -32,12 +32,15 @@
         <resilience4j.version>2.2.0</resilience4j.version>
         <springdoc.version>2.8.5</springdoc.version>
         <archunit.version>1.4.1</archunit.version>
+        <wiremock.version>3.9.2</wiremock.version>
         <jacoco.version>0.8.12</jacoco.version>
     </properties>
 
     <modules>
         <module>monolito-modular</module>
         <module>comparativa-clean</module>
+        <module>microservicios/citas-service</module>
+        <module>microservicios/notificaciones-service</module>
     </modules>
 
     <dependencyManagement>
@@ -90,6 +93,14 @@
                 <groupId>com.tngtech.archunit</groupId>
                 <artifactId>archunit-junit5</artifactId>
                 <version>${archunit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- WireMock Standalone para pruebas de resiliencia -->
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock-standalone</artifactId>
+                <version>${wiremock.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

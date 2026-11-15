@@ -111,6 +111,94 @@ services:
       notificaciones:
         condition: service_healthy
 
+  fn-notificar:
+    profiles: ["serverless"]
+    build:
+      context: .
+      dockerfile: serverless/funciones-citas/Dockerfile
+    container_name: m1-fn-notificar
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      SPRING_CLOUD_FUNCTION_DEFINITION: notificar
+      NOTIFICACIONES_CANAL: ${NOTIFICACIONES_CANAL:-CONSOLA}
+      NOTIFICACIONES_SIMULAR_FALLA: ${NOTIFICACIONES_SIMULAR_FALLA:-false}
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  fn-consultas:
+    profiles: ["serverless"]
+    build:
+      context: .
+      dockerfile: serverless/funciones-citas/Dockerfile
+    container_name: m1-fn-consultas
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SPRING_CLOUD_FUNCTION_DEFINITION: listarOficinas;consultarDisponibilidad;consultarCita;infoSistema
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  fn-reservar:
+    profiles: ["serverless"]
+    build:
+      context: .
+      dockerfile: serverless/funciones-citas/Dockerfile
+    container_name: m1-fn-reservar
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SPRING_CLOUD_FUNCTION_DEFINITION: reservarCita;cancelarCita
+      FN_NOTIFICAR_URL: http://fn-notificar:8080/notificar
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+      fn-notificar:
+        condition: service_healthy
+
+  enrutador:
+    profiles: ["serverless"]
+    build:
+      context: ./serverless/enrutador
+      dockerfile: Dockerfile
+    container_name: m1-enrutador
+    restart: unless-stopped
+    mem_limit: 128m
+    ports:
+      - "8081:8081"
+    networks:
+      - frontal
+    depends_on:
+      fn-consultas:
+        condition: service_healthy
+      fn-reservar:
+        condition: service_healthy
+
 networks:
   frontal:
     name: m1_frontal

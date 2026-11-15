@@ -151,6 +151,17 @@
 
     <profiles>
         <profile>
+            <id>modulo-serverless</id>
+            <activation>
+                <file>
+                    <exists>serverless/funciones-citas/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>serverless/funciones-citas</module>
+            </modules>
+        </profile>
+        <profile>
             <id>cobertura</id>
             <build>
                 <plugins>

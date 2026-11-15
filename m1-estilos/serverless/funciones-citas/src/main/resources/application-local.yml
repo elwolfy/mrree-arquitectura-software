@@ -1,0 +1,4 @@
+logging:
+  level:
+    pe.utec.consular.serverless: DEBUG
+

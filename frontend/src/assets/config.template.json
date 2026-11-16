@@ -1,0 +1,12 @@
+{
+  "apiBaseUrl": "${API_BASE_URL}",
+  "modulo": "${MODULO}",
+  "funcionalidades": {
+    "citas": ${FUNC_CITAS},
+    "tramites": ${FUNC_TRAMITES},
+    "pagos": ${FUNC_PAGOS},
+    "bffInicio": ${FUNC_BFF},
+    "historial": ${FUNC_HISTORIAL}
+  }
+}
+

@@ -1,0 +1,12 @@
+{
+  "apiBaseUrl": "http://localhost:8081",
+  "modulo": "m1",
+  "funcionalidades": {
+    "citas": true,
+    "tramites": false,
+    "pagos": false,
+    "bffInicio": false,
+    "historial": false
+  }
+}
+

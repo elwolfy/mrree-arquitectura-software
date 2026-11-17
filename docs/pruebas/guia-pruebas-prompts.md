@@ -24,7 +24,8 @@
 | **07 (Parte 3)** | M1: `README.md`, verificación integral y tag `s1` | `m1-estilos/README.md`, tag `s1` | Completado |
 | **07-1** | M1: Andamiaje y guía A1 en `main` (tag `s2`) + solución en `solucion/a1` | `docs/asignaciones/A1*.md`, `docs/adr/ADR-001*.md`, `monolito-modular` | Completado |
 | **08-1** | M2: Esqueleto base, RabbitMQ y `citas-service` | `m2-integracion/citas-service` | Completado |
-| **08-2 a 08-7** | M2: `tramites`, `identidad`, `notificaciones`, `pagos`, `bff`, `gateway`, `sidecar` | `m2-integracion/*` | Pendiente |
+| **08-2** | M2: `tramites-service` (Factory Method, Builder, eventos y gRPC) | `m2-integracion/tramites-service` | Completado |
+| **08-3 a 08-7** | M2: `identidad`, `notificaciones`, `pagos`, `bff`, `gateway`, `sidecar` | `m2-integracion/*` | Pendiente |
 | **09** | M3: Persistencia, Saga, Outbox, Event Sourcing y CQRS | `m3-datos/*` | Pendiente |
 | **10** | M4: Observabilidad (OpenTelemetry + Grafana LGTM) | `m4-observabilidad/*` | Pendiente |
 | **11–13** | ADRs, C4, soluciones de asignaciones y verificación final | `docs/*` | Pendiente |
@@ -297,4 +298,28 @@ Invoke-RestMethod -Uri "http://localhost:8081/api/citas" -Method POST -ContentTy
 
 # 4. Limpiar entorno de M2
 .\m2-integracion\scripts\limpiar.ps1
+```
+
+---
+
+## Prompt 08-2 — M2: `tramites-service` (Factory Method, Builder, Eventos y gRPC)
+
+### 1. Pruebas automatizadas (Unitarias + ArchUnit + Testcontainers PostgreSQL/RabbitMQ + gRPC)
+```powershell
+mvn -B -f m2-integracion verify
+git grep -n "switch\|instanceof" m2-integracion/tramites-service/src/main/java/**/application
+```
+
+### 2. Pruebas en contenedores Docker (`:8082` HTTP y `:9082` gRPC)
+```powershell
+# Levantar PostgreSQL, RabbitMQ, Mailpit, citas-service (:8081) y tramites-service (:8082 / :9082)
+.\m2-integracion\scripts\levantar.ps1
+
+# 2.1 Registrar los 3 tipos de trámite (verifica subtipo y estado PENDIENTE_PAGO)
+Invoke-RestMethod -Uri "http://localhost:8082/api/tramites" -Method POST -ContentType "application/json; charset=utf-8" -Body ([System.Text.Encoding]::UTF8.GetBytes('{"dni":"40000001","nombres":"Ana Perez","email":"ana@correo.lab","tipoTramite":"LEGALIZACION","pais":"ES","folios":3,"idioma":"ES"}')) | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:8082/api/tramites" -Method POST -ContentType "application/json; charset=utf-8" -Body ([System.Text.Encoding]::UTF8.GetBytes('{"dni":"40000002","nombres":"Carlos Mendoza","email":"carlos@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}')) | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:8082/api/tramites" -Method POST -ContentType "application/json; charset=utf-8" -Body ([System.Text.Encoding]::UTF8.GetBytes('{"dni":"40000003","nombres":"Elena Vargas","email":"elena@correo.lab","tipoTramite":"REGISTRO_CONSULAR","pais":"AR","folios":1,"idioma":"ES"}')) | ConvertTo-Json
+
+# 2.2 Detener contenedores al terminar
+.\m2-integracion\scripts\detener.ps1
 ```

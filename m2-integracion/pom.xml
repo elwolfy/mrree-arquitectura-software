@@ -33,11 +33,13 @@
         <springdoc.version>2.8.5</springdoc.version>
         <archunit.version>1.4.1</archunit.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <grpc.version>1.68.2</grpc.version>
+        <protobuf.version>3.25.5</protobuf.version>
     </properties>
 
     <modules>
         <module>citas-service</module>
-        <!-- <module>tramites-service</module> -->
+        <!-- tramites-service se activa automáticamente cuando existe tramites-service/pom.xml -->
         <!-- <module>pagos-service</module> -->
         <!-- <module>notificaciones-service</module> -->
         <!-- <module>identidad-service</module> -->
@@ -144,6 +146,17 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>modulo-tramites</id>
+            <activation>
+                <file>
+                    <exists>tramites-service/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>tramites-service</module>
+            </modules>
+        </profile>
         <profile>
             <id>cobertura</id>
             <build>

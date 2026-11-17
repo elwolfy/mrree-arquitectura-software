@@ -35,7 +35,8 @@ try {
         @{ Nombre = "m2-postgres"; Servicio = "PostgreSQL 16" },
         @{ Nombre = "m2-rabbitmq"; Servicio = "RabbitMQ 3 Management" },
         @{ Nombre = "m2-mailpit";  Servicio = "Mailpit SMTP/Web" },
-        @{ Nombre = "m2-citas";    Servicio = "citas-service (8081)" }
+        @{ Nombre = "m2-citas";    Servicio = "citas-service (8081)" },
+        @{ Nombre = "m2-tramites"; Servicio = "tramites-service (8082/9082)" }
     )
 
     $TiempoMaximoSegundos = 120
@@ -78,11 +79,13 @@ try {
     Write-Host "`n==================================================================" -ForegroundColor Cyan
     Write-Host " Servicios activos - Modulo 2 (Integracion y Comunicacion)" -ForegroundColor Cyan
     Write-Host "==================================================================" -ForegroundColor Cyan
-    Write-Host "  * citas-service (Swagger UI): http://localhost:8081/swagger-ui.html"
-    Write-Host "  * citas-service (OpenAPI):    http://localhost:8081/v3/api-docs"
-    Write-Host "  * RabbitMQ Consola Web:       http://localhost:15672  (usuario: consular / clave: consular)"
-    Write-Host "  * Mailpit Web UI:             http://localhost:8025"
-    Write-Host "  * PostgreSQL:                 localhost:5432          (BD: consular)"
+    Write-Host "  * citas-service (Swagger UI):    http://localhost:8081/swagger-ui.html"
+    Write-Host "  * citas-service (OpenAPI):       http://localhost:8081/v3/api-docs"
+    Write-Host "  * tramites-service (Swagger UI): http://localhost:8082/swagger-ui.html"
+    Write-Host "  * tramites-service (gRPC):       localhost:9082"
+    Write-Host "  * RabbitMQ Consola Web:          http://localhost:15672  (usuario: consular / clave: consular)"
+    Write-Host "  * Mailpit Web UI:                http://localhost:8025"
+    Write-Host "  * PostgreSQL:                    localhost:5432          (BD: consular)"
     Write-Host "==================================================================" -ForegroundColor Cyan
 }
 finally {

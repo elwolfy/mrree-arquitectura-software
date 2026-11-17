@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package consular.tramites.v1;
+
+option java_multiple_files = true;
+option java_package = "pe.utec.consular.tramites.grpc.v1";
+option java_outer_classname = "TramitesProto";
+
+// Servicio gRPC para consulta de trámites consulares (sección 6 del contrato global).
+// Permite comparar el contrato binario tipado (Protobuf sobre HTTP/2 en el puerto 9082)
+// frente al endpoint REST equivalente GET /api/tramites/{id} en el puerto 8082.
+service TramitesService {
+  rpc ConsultarTramite (ConsultarTramiteRequest) returns (TramiteResponse);
+}
+
+message ConsultarTramiteRequest {
+  string id = 1;
+}
+
+message TramiteResponse {
+  string id = 1;
+  string codigo = 2;
+  string dni = 3;
+  string nombres = 4;
+  string email = 5;
+  string tipo_tramite = 6;
+  string subtipo = 7;
+  string pais = 8;
+  int32 folios = 9;
+  string idioma = 10;
+  string estado = 11;
+  string monto = 12;
+  string creado_en = 13;
+}
+

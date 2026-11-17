@@ -8,6 +8,7 @@ package pe.utec.consular.monolito.citas.domain;
  */
 public enum EstadoCita {
     RESERVADA,
+    REPROGRAMADA,
     CANCELADA,
     ATENDIDA
 }

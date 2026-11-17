@@ -238,3 +238,12 @@ Valores reales medidos en el entorno de referencia (Windows + Docker Desktop WSL
 5. **Rendimiento de WSL 2 y memoria en Windows**:
    - Si nota lentitud tras varias horas de uso de contenedores en Windows, puede liberar la caché de Docker y reiniciar con `.\scripts\limpiar.ps1 -Forzar`.
 
+---
+
+## 8. Asignación A1
+
+La primera asignación evaluada del curso se desarrolla sobre `monolito-modular` e integra la decisión CAP de la reprogramación de citas, la redacción del ADR correspondiente y la implementación de la regla de dominio de las 24 horas verificada por pruebas unitarias y ArchUnit.
+
+- Consulte la guía paso a paso y la rúbrica en [docs/asignaciones/A1.md](../docs/asignaciones/A1.md).
+
+

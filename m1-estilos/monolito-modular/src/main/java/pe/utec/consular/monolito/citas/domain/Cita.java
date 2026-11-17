@@ -24,9 +24,9 @@ public class Cita {
     private final String nombres;
     private final Email email;
     private final String oficinaId;
-    private final UUID cupoId;
-    private final LocalDate fecha;
-    private final LocalTime hora;
+    private UUID cupoId;
+    private LocalDate fecha;
+    private LocalTime hora;
     private final TipoTramite tipoTramite;
     private EstadoCita estado;
     private String notificacion;
@@ -78,6 +78,19 @@ public class Cita {
             throw new ReglaNegocioException("La cita " + codigo + " ya se encuentra cancelada");
         }
         this.estado = EstadoCita.CANCELADA;
+    }
+
+    /**
+     * Reprograma la cita hacia un nuevo cupo y actualiza su estado a REPROGRAMADA.
+     */
+    public void reprogramar(UUID nuevoCupoId, LocalDate nuevaFecha, LocalTime nuevaHora) {
+        if (this.estado == EstadoCita.CANCELADA || this.estado == EstadoCita.ATENDIDA) {
+            throw new ReglaNegocioException("No se puede reprogramar la cita " + codigo + " en estado " + this.estado);
+        }
+        this.cupoId = Objects.requireNonNull(nuevoCupoId, "El nuevo identificador de cupo no puede ser nulo");
+        this.fecha = Objects.requireNonNull(nuevaFecha, "La nueva fecha no puede ser nula");
+        this.hora = Objects.requireNonNull(nuevaHora, "La nueva hora no puede ser nula");
+        this.estado = EstadoCita.REPROGRAMADA;
     }
 
     public void marcarNotificacion(String nuevoEstadoNotificacion) {

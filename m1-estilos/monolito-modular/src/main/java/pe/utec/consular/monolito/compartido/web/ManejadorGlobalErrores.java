@@ -17,6 +17,7 @@ import pe.utec.consular.monolito.compartido.domain.exception.CitaDuplicadaExcept
 import pe.utec.consular.monolito.compartido.domain.exception.CupoSinCapacidadException;
 import pe.utec.consular.monolito.compartido.domain.exception.NotificacionFallidaException;
 import pe.utec.consular.monolito.compartido.domain.exception.RecursoNoEncontradoException;
+import pe.utec.consular.monolito.compartido.domain.exception.ReglaNegocioException;
 import pe.utec.consular.monolito.compartido.domain.exception.TarifaNoDisponibleException;
 
 import java.net.URI;
@@ -106,6 +107,30 @@ public class ManejadorGlobalErrores {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(pd);
+    }
+
+    @ExceptionHandler(ReglaNegocioException.class)
+    public ResponseEntity<ProblemDetail> manejarReglaNegocio(ReglaNegocioException ex, HttpServletRequest request) {
+        ProblemDetail pd = crearProblemDetail(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                ex.getTitulo(),
+                ex.getMessage(),
+                ex.getCodigo(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(pd);
+    }
+
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<ProblemDetail> manejarOperacionNoSoportada(UnsupportedOperationException ex, HttpServletRequest request) {
+        ProblemDetail pd = crearProblemDetail(
+                HttpStatus.NOT_IMPLEMENTED,
+                "Funcionalidad pendiente: asignación A1",
+                ex.getMessage(),
+                "funcionalidad-pendiente",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(pd);
     }
 
     @ExceptionHandler({BaseDeDatosNoDisponibleException.class, CannotCreateTransactionException.class})

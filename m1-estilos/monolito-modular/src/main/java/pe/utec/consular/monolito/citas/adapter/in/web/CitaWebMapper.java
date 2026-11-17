@@ -2,11 +2,13 @@ package pe.utec.consular.monolito.citas.adapter.in.web;
 
 import org.springframework.stereotype.Component;
 import pe.utec.consular.monolito.citas.application.port.in.RegistrarCitaCommand;
+import pe.utec.consular.monolito.citas.application.port.in.ReprogramarCitaCommand;
 import pe.utec.consular.monolito.citas.domain.Cita;
 import pe.utec.consular.monolito.citas.domain.Disponibilidad;
 import pe.utec.consular.monolito.citas.domain.OficinaConsular;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Mapeador entre modelos de dominio y DTOs de la capa web.
@@ -24,6 +26,14 @@ public class CitaWebMapper {
                 request.fecha(),
                 request.hora(),
                 request.tipoTramite()
+        );
+    }
+
+    public ReprogramarCitaCommand aComando(UUID citaId, ReprogramarCitaRequest request) {
+        return new ReprogramarCitaCommand(
+                citaId,
+                request.fecha(),
+                request.hora()
         );
     }
 

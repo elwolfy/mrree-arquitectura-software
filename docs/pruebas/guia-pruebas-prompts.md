@@ -21,6 +21,8 @@
 | **06** | Frontend Ciudadano (Angular 19 + PrimeNG 19) | `frontend/` (`consular-frontend`) | Completado |
 | **07 (Parte 1)** | M1: Compose único con perfiles y scripts robustos | `m1-estilos/docker-compose.yml`, `m1-estilos/scripts/*` | Completado |
 | **07 (Parte 2)** | M1: Scripts k6 de carga y matrices comparativas | `docs/pruebas/k6`, `docs/matrices/*` | Completado |
+| **07 (Parte 3)** | M1: `README.md`, verificación integral y tag `s1` | `m1-estilos/README.md`, tag `s1` | Completado |
+| **07-1** | M1: Andamiaje y guía A1 en `main` (tag `s2`) + solución en `solucion/a1` | `docs/asignaciones/A1*.md`, `docs/adr/ADR-001*.md`, `monolito-modular` | Completado |
 | **08-1** | M2: Esqueleto base, RabbitMQ y `citas-service` | `m2-integracion/citas-service` | Completado |
 | **08-2 a 08-7** | M2: `tramites`, `identidad`, `notificaciones`, `pagos`, `bff`, `gateway`, `sidecar` | `m2-integracion/*` | Pendiente |
 | **09** | M3: Persistencia, Saga, Outbox, Event Sourcing y CQRS | `m3-datos/*` | Pendiente |
@@ -237,6 +239,46 @@ Abre `http://localhost:4200` en el navegador para recorrer el flujo de reserva e
 - `docs/matrices/m1-escenarios-calidad.md`: Plantilla de 6 partes, ejemplo consular resuelto y árbol de utilidad.
 - `docs/matrices/m1-cap-por-operacion.md`: Decisiones CAP por operación y espacio vacío para `Reprogramar cita` (Asignación A1).
 - `docs/matrices/m1-hexagonal-vs-clean.md`: Equivalencias clase por clase entre Hexagonal y Clean Architecture.
+
+---
+
+## Prompt 07-1 — Guía y Solución de la Asignación A1 (`main` y `solucion/a1`)
+
+### 1. En la rama `main` (Andamiaje de A1 — Etiqueta `s2`)
+```powershell
+git checkout main
+
+# 1. Compilación y pruebas de todo M1 (ReglaDeReprogramacionTest aparece como skipped)
+mvn -B -f m1-estilos verify
+
+# 2. Verificar que en main no está resuelta la regla
+git grep -n "Duration.between" -- m1-estilos/monolito-modular/src/main/java/**/ReglaDeReprogramacion.java
+
+# 3. Levantar monolito y comprobar que PUT /api/citas/{id}/reprogramacion devuelve 501 Not Implemented
+.\m1-estilos\scripts\levantar.ps1 monolito
+$f1 = "2026-11-23"
+$f2 = "2026-11-24"
+$cita = Invoke-RestMethod -Uri "http://localhost:8081/api/citas" -Method Post -ContentType "application/json" -Body (@{dni="40000001";nombres="Ana Perez";email="ana@correo.lab";oficinaId="MAD";fecha=$f1;hora="09:00";tipoTramite="LEGALIZACION"} | ConvertTo-Json)
+try {
+    Invoke-RestMethod -Uri "http://localhost:8081/api/citas/$($cita.id)/reprogramacion" -Method Put -ContentType "application/json" -Body (@{fecha=$f2;hora="10:00"} | ConvertTo-Json)
+} catch {
+    Write-Host "HTTP Status:" $_.Exception.Response.StatusCode.value__
+}
+```
+
+### 2. En la rama `solucion/a1` (Solución de Referencia)
+```powershell
+git checkout solucion/a1
+
+# 1. Ejecutar prueba unitaria de la regla de 24 h (3/3 tests en verde) y verificación completa
+mvn -B -f m1-estilos verify -pl monolito-modular
+
+# 2. Verificar que git diff --stat main...solucion/a1 muestra solo los 4 archivos de la solución
+git diff --stat main...solucion/a1
+
+# 3. Levantar monolito en solucion/a1 y probar reprogramación >= 24 h (200 REPROGRAMADA) y < 24 h (422)
+.\m1-estilos\scripts\levantar.ps1 monolito
+```
 
 ---
 

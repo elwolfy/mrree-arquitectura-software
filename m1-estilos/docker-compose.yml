@@ -84,8 +84,10 @@ services:
     ports:
       - "8081:8081"
     networks:
-      - frontal
-      - datos
+      frontal:
+        gw_priority: 10
+      datos:
+        gw_priority: 1
     depends_on:
       postgres:
         condition: service_healthy
@@ -117,8 +119,10 @@ services:
     ports:
       - "8081:8081"
     networks:
-      - frontal
-      - datos
+      frontal:
+        gw_priority: 10
+      datos:
+        gw_priority: 1
     depends_on:
       postgres:
         condition: service_healthy
@@ -179,8 +183,10 @@ services:
     ports:
       - "8081:8081"
     networks:
-      - frontal
-      - datos
+      frontal:
+        gw_priority: 10
+      datos:
+        gw_priority: 1
     depends_on:
       postgres:
         condition: service_healthy
@@ -324,6 +330,7 @@ networks:
     name: m1_frontal
   datos:
     name: m1_datos
+    internal: true
 
 volumes:
   m1_postgres_data:

@@ -7,7 +7,7 @@ spring:
     name: consular-monolito
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/consular?currentSchema=citas,tramites,notificaciones
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/consular?currentSchema=citas,tramites,notificaciones&connectTimeout=2&socketTimeout=2
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver

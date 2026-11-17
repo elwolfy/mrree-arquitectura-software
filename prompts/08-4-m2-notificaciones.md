@@ -26,7 +26,7 @@ El patrón Observer (2.1) llevado entre servicios: notificaciones reacciona a lo
 ## Criterios de aceptación
 
 - `docker stop m2-notificaciones`; registrar tres trámites; la consola RabbitMQ muestra 3 mensajes en `notificaciones.tramite.registrado`; `docker start m2-notificaciones` → 3 correos en Mailpit (`localhost:8025`) y la cola en 0.
-- No existe consumidor de `tramite.observado` en `main`.
+- No existe consumidor de `tramite.observado` en `main` (es la tarea práctica de A2; el andamiaje se agrega en 08-7).
 
 ## Commit
 

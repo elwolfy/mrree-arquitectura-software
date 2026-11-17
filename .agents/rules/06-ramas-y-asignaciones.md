@@ -18,13 +18,11 @@ activation: always
 ## Reglas para el agente
 
 1. Trabajar en `main` salvo que el prompt indique otra rama.
-2. **No** implementar en `main` nada listado en la sección 8 del contrato (reprogramación, `tramite.observado`, compensación de la saga, caché Redis de consulta de trámite). Si una prueba, DTO, enumeración o ruta de esas funcionalidades aparece en `main`, es un error.
-   - Excepción: los valores de enumeración `REPROGRAMADA`, `OBSERVADO`, `RECHAZADO` y `ANULADO` pueden existir en `main` solo si el contrato los requiere para otra funcionalidad; si no, se agregan en la rama de solución.
-3. `main` debe tener **puntos de extensión claros** para que la asignación sea realizable en 30–60 minutos:
-   - A1: el puerto, servicio y controlador de citas siguen un patrón que el participante puede copiar; `docs/asignaciones/A1.md` indica los archivos a crear.
-   - A2: existe el publicador de eventos y un consumidor de ejemplo (`tramite.registrado`) que sirve de modelo.
-   - A3: el orquestador de la saga tiene el manejador de `emision.fallida` que hoy solo registra el error.
-   - A4: Redis ya está en el compose de m3 y la dependencia `spring-boot-starter-data-redis` está en el POM de tramites, sin usar.
+2. Cada asignación tiene **dos tareas** (contrato, sección 8): una **conceptual** y una **práctica**. En `main` se implementa el **andamiaje** de la tarea práctica, pero **no** su lógica central (la regla de 24 h, el consumidor de `tramite.observado`, la compensación de la saga, el adaptador Redis) ni la respuesta de la tarea conceptual. Si esa lógica aparece en `main`, es un error.
+3. El andamiaje deja la tarea práctica realizable en unos 25 minutos por un participante con conocimientos básicos de Java:
+   - Firmas, cableado y endpoint ya existen; el punto a completar tiene un `TODO` explícito y responde `501` o registra una advertencia mientras no se implemente.
+   - Existe una prueba con `@Disabled("Asignación AN")` que el participante habilita: es su criterio de aceptación.
+   - Hay un ejemplo equivalente en el código que sirve de modelo (indicado con su ruta en la guía).
 4. Las ramas de solución incluyen: código, pruebas que validan los criterios de aceptación, actualización de documentación (ADR o C4 cuando corresponda) y una sección "Cómo verificar" en `docs/asignaciones/AN-solucion.md`.
 5. Las ramas de solución deben pasar CI.
 
@@ -32,12 +30,13 @@ activation: always
 
 Cada `docs/asignaciones/AN.md` contiene:
 
-1. Objetivo y concepto del curso que practica (con sección del plan).
-2. Punto de partida: tag y carpeta.
-3. Pasos sugeridos (sin revelar el código completo).
+1. Objetivo y concepto del curso que practica (con sección del plan). Tiempo estimado: ≈ 45 min.
+2. **Tarea 1 – conceptual (≈ 20 min):** qué decidir, dónde escribirlo y qué evidencia usar.
+3. **Tarea 2 – práctica (≈ 25 min):** archivo con el `TODO`, ejemplo modelo, prueba a habilitar.
 4. Cómo ejecutar en **modo híbrido** desde Eclipse (perfil `local`).
-5. Criterios de aceptación verificables (comandos curl o pasos en el frontend).
-6. Cómo entregar: rama `aN-<usuario>` en su fork + capturas + enlace.
+5. Criterios de aceptación verificables de cada tarea (prueba en verde y un comando curl o paso en el frontend).
+6. Cómo entregar: rama `aN-<usuario>` en su fork.
+7. Rúbrica breve: tarea conceptual 60 %, tarea práctica 40 %.
 
 ## Convención de commits
 

@@ -1,5 +1,7 @@
 # Prompt 11 — Documentación: ADR, modelo C4, guías de instalación y asignaciones
 
+> `docs/adr/template.md`, el esqueleto de `ADR-001` y `docs/asignaciones/A1.md` ya se crean en el prompt 07-1, y `A2.md` en el 08-7: en este paso solo se revisan para mantener la coherencia, sin reescribirlos.
+
 > Rama `main`. Referencias: todo el contrato, regla 06, plan del curso (secciones 5, 7, 8 y 10).
 
 ## Tareas
@@ -33,7 +35,7 @@ Archivos en español, paso a paso, con capturas marcadas como `![captura: …](i
 
 ### 4. Guías de asignación (`docs/asignaciones/`)
 
-`A1.md` … `A4.md` y `proyecto-final.md`, con la estructura de la regla 06, alineadas con el plan (sección 8) y el contrato (sección 8). Incluir el tiempo estimado (A1 60 min, A2 30, A3 30, A4 60, proyecto final 30 + semana entre S5 y S6) y la rúbrica del plan (sección 10).
+`A1.md` … `A4.md` y `proyecto-final.md`, con la estructura de la regla 06, alineadas con el plan (sección 8) y el contrato (sección 8). Cada asignación con una tarea conceptual y una práctica (≈ 45 min en total; contrato, sección 8); proyecto final: 30 min + semana entre S5 y S6. Rúbrica: 60 % conceptual, 40 % práctica.
 
 ### 5. Otros
 

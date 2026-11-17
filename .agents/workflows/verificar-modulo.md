@@ -13,5 +13,5 @@ description: Compila, prueba, levanta y verifica una carpeta de módulo del curs
 5. Ejecutar las verificaciones funcionales del README del módulo (sección "Verificación rápida") y mostrar la salida.
 6. Abrir `http://localhost:4200` en el navegador del agente y recorrer el flujo principal del módulo; adjuntar capturas.
 7. Registrar `docker stats --no-stream` y comparar con el presupuesto de memoria de la regla 03.
-8. Confirmar con `git grep` que no existen en `main` rutas, eventos o clases de las asignaciones (`reprogramacion`, `tramite.observado`, `motivo_rechazo`, `@Cacheable` en tramites).
+8. Confirmar que en `main` la lógica central de las asignaciones no está implementada (contrato, sección 8): las pruebas de asignación siguen con `@Disabled` y los puntos de extensión mantienen su `TODO`.
 9. Resumir en el Walkthrough: resultado de cada paso, evidencia y pendientes.

@@ -14,7 +14,7 @@ Servicio que materializa dos patrones creacionales (2.1) en el dominio y expone 
    - Abstracción `Tramite` y subtipos `Legalizacion`, `Apostilla`, `RegistroConsular`, cada uno con sus datos y validaciones propias.
    - **Factory Method**: `domain/TramiteFactory.java` con `crear(TipoTramite tipo, Solicitud solicitud)`. Javadoc que explique el patrón, el problema que resuelve y su costo.
    - **Builder**: `domain/Solicitud.java` inmutable con `Solicitud.builder().dni(..).tipo(..).pais(..).folios(..).idioma(..).build()`; `build()` valida coherencia por tipo y lanza una excepción de dominio clara.
-   - Estados en M2: `REGISTRADO` → `PENDIENTE_PAGO` (el pago llega en M3). `OBSERVADO` existe en el enum del contrato pero **no tiene transición ni endpoint en `main`** (A2).
+   - Estados en M2: `REGISTRADO` → `PENDIENTE_PAGO` (el pago llega en M3). `OBSERVADO` y su endpoint se agregan en el prompt 08-7 como andamiaje de la asignación A2.
 2. **Aplicación**: casos de uso `RegistrarTramite`, `ConsultarTramite`, `ListarTramitesPorDni`. Puerto de salida `application/port/out/PublicadorDeEventosPort.java` (mismo nombre que en citas; implementación propia, sin compartir código).
 3. **Adaptadores**:
    - REST: `POST /api/tramites`, `GET /api/tramites/{id}`, `GET /api/tramites?dni=` (contrato 6).

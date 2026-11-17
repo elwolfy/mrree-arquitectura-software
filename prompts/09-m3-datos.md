@@ -1,3 +1,5 @@
+> **Asignaciones A3 y A4:** este prompt deja en `main` el **andamiaje** descrito en la sección 8 del contrato y en la regla 06 (anulación en pagos, `pago.anulado`, columna `motivo_rechazo`, estado `RECHAZADO`, manejador de `emision.fallida` con `TODO`; puerto `CacheConsultaTramitePort` con adaptador nulo e invalidación en el proyector; pruebas `@Disabled`). Donde este texto diga que algo de A3 o A4 no existe en `main`, prevalece la sección 8 del contrato. Este prompt se dividirá en pasos 09-1 … 09-n junto con el material del Módulo 3.
+
 # Prompt 09 — M3: Persistencia y gestión de datos
 
 > Rama `main`. Referencias: contrato (secciones 6.2, 6.3, 8), reglas 01–06, plan sección 7 (3.1–3.4) y sección 8 (S4, S5).

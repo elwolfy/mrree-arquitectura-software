@@ -14,7 +14,7 @@ Cerrar el módulo con el patrón Sidecar (2.2), la comparación REST vs. gRPC (2
    - Instrucciones en el README: `docker compose --profile sidecar up -d` con `FALLAS_INTERMITENTES_PORCENTAJE=50` y lectura de `localhost:9901/stats` (contadores `upstream_rq_retry`).
 2. **REST vs. gRPC**: `scripts/grpc-consultar.ps1` y `.sh` ejecutan `fullstorydev/grpcurl` en contenedor contra `m2-tramites:9082` (red de compose), muestran la respuesta y comparan su tamaño en bytes con la de `GET /api/tramites/{id}`.
 3. **Contratos**:
-   - `docs/contratos/asyncapi.yaml` (AsyncAPI 3) con `cita.reservada` y `tramite.registrado`, cabeceras y colas del contrato 6.1. **Sin `tramite.observado`** (A2).
+   - `docs/contratos/asyncapi.yaml` (AsyncAPI 3) con `cita.reservada` y `tramite.registrado`, cabeceras y colas del contrato 6.1. **Sin `tramite.observado`**: su documentación es la tarea conceptual de A2.
    - `docs/pruebas/colecciones/m2.postman_collection.json` (y carpeta Bruno equivalente): validar identidad con los tres DNI, iniciar trámite por BFF, consultar trámite, tarifas, inicio del ciudadano.
 4. **DDD**:
    - `docs/ddd/lenguaje-ubicuo.md`: tabla del contrato 1.1 con columna de bounded context (Cupo, Cita, Solicitud, Trámite, Observación, Orden de pago, Ciudadano, Aviso).

@@ -1,0 +1,25 @@
+{
+  "priority": 3,
+  "request": {
+    "method": "POST",
+    "url": "/ws/reniec/consultarDatos",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": {
+          "expression": "$.nuDniConsulta",
+          "matches": "^400000(0[1-9]|[1-4][0-9]|50)$"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "fixedDelayMilliseconds": 300,
+    "transformers": ["response-template"],
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"coResultado\":\"0000\",\"deResultado\":\"CONSULTA EXITOSA\",\"datosPersona\":{\"nuDni\":\"{{jsonPath request.body '$.nuDniConsulta'}}\",\"prenombres\":\"CIUDADANO {{jsonPath request.body '$.nuDniConsulta'}}\",\"apPrimer\":\"PEREZ\",\"apSegundo\":\"MENDOZA\",\"estadoCivil\":\"SOLTERO\",\"inFallecido\":\"N\"}}"
+  }
+}
+

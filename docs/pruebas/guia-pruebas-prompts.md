@@ -25,7 +25,8 @@
 | **07-1** | M1: Andamiaje y guía A1 en `main` (tag `s2`) + solución en `solucion/a1` | `docs/asignaciones/A1*.md`, `docs/adr/ADR-001*.md`, `monolito-modular` | Completado |
 | **08-1** | M2: Esqueleto base, RabbitMQ y `citas-service` | `m2-integracion/citas-service` | Completado |
 | **08-2** | M2: `tramites-service` (Factory Method, Builder, eventos y gRPC) | `m2-integracion/tramites-service` | Completado |
-| **08-3 a 08-7** | M2: `identidad`, `notificaciones`, `pagos`, `bff`, `gateway`, `sidecar` | `m2-integracion/*` | Pendiente |
+| **08-3** | M2: `identidad-service` (Adapter + ACL) y `pide-simulador` | `m2-integracion/identidad-service`, `pide-simulador` | Completado |
+| **08-4 a 08-7** | M2: `notificaciones`, `pagos`, `bff`, `gateway`, `sidecar` | `m2-integracion/*` | Pendiente |
 | **09** | M3: Persistencia, Saga, Outbox, Event Sourcing y CQRS | `m3-datos/*` | Pendiente |
 | **10** | M4: Observabilidad (OpenTelemetry + Grafana LGTM) | `m4-observabilidad/*` | Pendiente |
 | **11–13** | ADRs, C4, soluciones de asignaciones y verificación final | `docs/*` | Pendiente |
@@ -321,5 +322,33 @@ Invoke-RestMethod -Uri "http://localhost:8082/api/tramites" -Method POST -Conten
 Invoke-RestMethod -Uri "http://localhost:8082/api/tramites" -Method POST -ContentType "application/json; charset=utf-8" -Body ([System.Text.Encoding]::UTF8.GetBytes('{"dni":"40000003","nombres":"Elena Vargas","email":"elena@correo.lab","tipoTramite":"REGISTRO_CONSULAR","pais":"AR","folios":1,"idioma":"ES"}')) | ConvertTo-Json
 
 # 2.2 Detener contenedores al terminar
+.\m2-integracion\scripts\detener.ps1
+```
+
+---
+
+## Prompt 08-3 — M2: `identidad-service` (Adapter + ACL) y `pide-simulador`
+
+### 1. Pruebas automatizadas y verificación de encapsulamiento de la ACL
+```powershell
+mvn -B -f m2-integracion verify
+git grep -n "coResultado" m2-integracion/identidad-service/src/main
+```
+
+### 2. Pruebas en contenedores Docker (`:8086` `identidad-service` y `:8089` `pide-simulador`)
+```powershell
+# Levantar entorno M2
+.\m2-integracion\scripts\levantar.ps1
+
+# 2.1 DNI válido (40000001) -> 200 OK con Ciudadano
+Invoke-RestMethod -Uri "http://localhost:8086/api/identidad/validaciones" -Method POST -ContentType "application/json" -Body '{"dni":"40000001"}' | ConvertTo-Json
+
+# 2.2 DNI fallecido (49999999) -> 422 "Identidad no vigente"
+try { Invoke-WebRequest -Uri "http://localhost:8086/api/identidad/validaciones" -Method POST -ContentType "application/json" -Body '{"dni":"49999999"}' -UseBasicParsing } catch { Write-Host "HTTP:" ([int]$_.Exception.Response.StatusCode) }
+
+# 2.3 DNI no encontrado (48888888) -> 404 "DNI no encontrado"
+try { Invoke-WebRequest -Uri "http://localhost:8086/api/identidad/validaciones" -Method POST -ContentType "application/json" -Body '{"dni":"48888888"}' -UseBasicParsing } catch { Write-Host "HTTP:" ([int]$_.Exception.Response.StatusCode) }
+
+# 2.4 Detener contenedores al terminar
 .\m2-integracion\scripts\detener.ps1
 ```

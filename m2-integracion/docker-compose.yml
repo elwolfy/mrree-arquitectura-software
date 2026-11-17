@@ -131,6 +131,50 @@ services:
       start_period: 40s
       retries: 5
 
+  pide-simulador:
+    image: wiremock/wiremock:3.9.2
+    container_name: m2-pide
+    restart: unless-stopped
+    mem_limit: 256m
+    command: ["--global-response-templating", "--verbose"]
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./pide-simulador/mappings:/home/wiremock/mappings:ro
+    networks:
+      - frontal
+      - datos
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/__admin/health >/dev/null || wget -qO- http://localhost:8080/__admin/health >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+
+  identidad-service:
+    build:
+      context: .
+      dockerfile: identidad-service/Dockerfile
+    container_name: m2-identidad
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      PIDE_URL: ${PIDE_URL:-http://pide-simulador:8080}
+    ports:
+      - "8086:8086"
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      pide-simulador:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8086/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
+
 networks:
   frontal:
     name: m2_frontal

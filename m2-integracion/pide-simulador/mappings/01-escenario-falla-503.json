@@ -1,0 +1,22 @@
+{
+  "priority": 1,
+  "scenarioName": "EstadoPide",
+  "requiredScenarioState": "CAIDO",
+  "request": {
+    "method": "POST",
+    "url": "/ws/reniec/consultarDatos"
+  },
+  "response": {
+    "status": 503,
+    "fixedDelayMilliseconds": 300,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "coResultado": "9999",
+      "deResultado": "SERVICIO DE INTEROPERABILIDAD PIDE-RENIEC TEMPORALMENTE FUERA DE LINEA",
+      "datosPersona": null
+    }
+  }
+}
+

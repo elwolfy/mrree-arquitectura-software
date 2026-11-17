@@ -1,0 +1,32 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "url": "/ws/reniec/consultarDatos",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.nuDniConsulta == '49999999')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "fixedDelayMilliseconds": 300,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "coResultado": "0000",
+      "deResultado": "CONSULTA EXITOSA",
+      "datosPersona": {
+        "nuDni": "49999999",
+        "prenombres": "ROBERTO CARLOS",
+        "apPrimer": "TORRES",
+        "apSegundo": "SILVA",
+        "estadoCivil": "CASADO",
+        "inFallecido": "S"
+      }
+    }
+  }
+}
+

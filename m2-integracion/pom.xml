@@ -158,6 +158,17 @@
             </modules>
         </profile>
         <profile>
+            <id>modulo-identidad</id>
+            <activation>
+                <file>
+                    <exists>identidad-service/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>identidad-service</module>
+            </modules>
+        </profile>
+        <profile>
             <id>cobertura</id>
             <build>
                 <plugins>

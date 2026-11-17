@@ -26,7 +26,7 @@ if ! docker compose up -d --build --remove-orphans; then
   exit 1
 fi
 
-CONTENEDORES=("m2-postgres" "m2-rabbitmq" "m2-mailpit" "m2-citas" "m2-tramites")
+CONTENEDORES=("m2-postgres" "m2-rabbitmq" "m2-mailpit" "m2-pide" "m2-citas" "m2-tramites" "m2-identidad")
 TIEMPO_MAXIMO_SEGUNDOS=120
 INTERVALO_SEGUNDOS=2
 
@@ -57,11 +57,13 @@ echo ""
 echo "=================================================================="
 echo " Servicios activos — Módulo 2 (Integración y Comunicación)"
 echo "=================================================================="
-echo "  * citas-service (Swagger UI):    http://localhost:8081/swagger-ui.html"
-echo "  * citas-service (OpenAPI):       http://localhost:8081/v3/api-docs"
-echo "  * tramites-service (Swagger UI): http://localhost:8082/swagger-ui.html"
-echo "  * tramites-service (gRPC):       localhost:9082"
-echo "  * RabbitMQ Consola Web:          http://localhost:15672  (usuario: consular / clave: consular)"
-echo "  * Mailpit Web UI:                http://localhost:8025"
-echo "  * PostgreSQL:                    localhost:5432          (BD: consular)"
+echo "  * citas-service (Swagger UI):     http://localhost:8081/swagger-ui.html"
+echo "  * citas-service (OpenAPI):        http://localhost:8081/v3/api-docs"
+echo "  * tramites-service (Swagger UI):  http://localhost:8082/swagger-ui.html"
+echo "  * tramites-service (gRPC):        localhost:9082"
+echo "  * identidad-service (Swagger UI): http://localhost:8086/swagger-ui.html"
+echo "  * Simulador PIDE (WireMock):      http://localhost:8089/__admin/mappings"
+echo "  * RabbitMQ Consola Web:           http://localhost:15672  (usuario: consular / clave: consular)"
+echo "  * Mailpit Web UI:                 http://localhost:8025"
+echo "  * PostgreSQL:                     localhost:5432          (BD: consular)"
 echo "=================================================================="

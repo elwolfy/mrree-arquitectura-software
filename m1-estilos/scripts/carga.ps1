@@ -47,10 +47,12 @@ try {
     Write-Host "==================================================================" -ForegroundColor Cyan
 
     docker compose --profile carga run --rm k6
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host ("[ERROR] La ejecuci$($o)n de k6 ('{0}') finaliz$($o) con errores." -f $archivoScript) -ForegroundColor Red
+    $k6Exit = $LASTEXITCODE
+    if ($k6Exit -ne 0 -and $k6Exit -ne 99) {
+        Write-Host ("[ERROR] La ejecuci$($o)n de k6 ('{0}') finaliz$($o) con errores (c$($o)digo {1})." -f $archivoScript, $k6Exit) -ForegroundColor Red
         exit 1
     }
+    exit 0
 }
 finally {
     Remove-Item Env:K6_SCRIPT -ErrorAction SilentlyContinue

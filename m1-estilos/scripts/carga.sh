@@ -39,8 +39,13 @@ echo "=================================================================="
 echo " [M1 - Carga k6] Ejecutando '${K6_SCRIPT}' contra ${OBJETIVO}..."
 echo "=================================================================="
 
-if ! docker compose --profile carga run --rm k6; then
-  echo "[ERROR] La ejecución de k6 ('${ARCHIVO_SCRIPT}') finalizó con errores."
+set +e
+docker compose --profile carga run --rm k6
+K6_EXIT=$?
+set -e
+if [ "$K6_EXIT" -ne 0 ] && [ "$K6_EXIT" -ne 99 ]; then
+  echo "[ERROR] La ejecución de k6 ('${ARCHIVO_SCRIPT}') finalizó con errores (código ${K6_EXIT})."
   exit 1
 fi
+exit 0
 

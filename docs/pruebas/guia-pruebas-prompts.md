@@ -20,7 +20,7 @@
 | **05** | M1: Variante Serverless (Spring Cloud Function + Nginx) | `m1-estilos/serverless` | Completado |
 | **06** | Frontend Ciudadano (Angular 19 + PrimeNG 19) | `frontend/` (`consular-frontend`) | Completado |
 | **07 (Parte 1)** | M1: Compose único con perfiles y scripts robustos | `m1-estilos/docker-compose.yml`, `m1-estilos/scripts/*` | Completado |
-| **07 (Parte 2)** | M1: Scripts k6 de carga y matrices comparativas | `docs/pruebas/k6`, `docs/matrices/*` | Pendiente |
+| **07 (Parte 2)** | M1: Scripts k6 de carga y matrices comparativas | `docs/pruebas/k6`, `docs/matrices/*` | Completado |
 | **08-1** | M2: Esqueleto base, RabbitMQ y `citas-service` | `m2-integracion/citas-service` | Completado |
 | **08-2 a 08-7** | M2: `tramites`, `identidad`, `notificaciones`, `pagos`, `bff`, `gateway`, `sidecar` | `m2-integracion/*` | Pendiente |
 | **09** | M3: Persistencia, Saga, Outbox, Event Sourcing y CQRS | `m3-datos/*` | Pendiente |
@@ -217,6 +217,10 @@ Abre `http://localhost:4200` en el navegador para recorrer el flujo de reserva e
 # Medir tiempos de arranque en logs y consumo de RAM (docker stats)
 .\m1-estilos\scripts\medir.ps1
 
+# Ejecutar pruebas de carga k6 sobre la variante en ejecución (50 VUs por 60 s, o rampa 10->100 VUs)
+.\m1-estilos\scripts\carga.ps1 citas
+.\m1-estilos\scripts\carga.ps1 pico
+
 # Simular y restaurar partición de red sobre m1_datos (para monolito o clean)
 .\m1-estilos\scripts\simular-particion.ps1
 .\m1-estilos\scripts\restaurar-red.ps1
@@ -227,6 +231,12 @@ Abre `http://localhost:4200` en el navegador para recorrer el flujo de reserva e
 # Eliminar contenedores, redes y volúmenes de M1
 .\m1-estilos\scripts\limpiar.ps1 -Forzar
 ```
+
+### Matrices de trabajo en `docs/matrices/`:
+- `docs/matrices/m1-estilos.md`: Criterios cualitativos y tabla de medición experimental para S1.
+- `docs/matrices/m1-escenarios-calidad.md`: Plantilla de 6 partes, ejemplo consular resuelto y árbol de utilidad.
+- `docs/matrices/m1-cap-por-operacion.md`: Decisiones CAP por operación y espacio vacío para `Reprogramar cita` (Asignación A1).
+- `docs/matrices/m1-hexagonal-vs-clean.md`: Equivalencias clase por clase entre Hexagonal y Clean Architecture.
 
 ---
 

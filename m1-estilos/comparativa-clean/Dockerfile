@@ -10,6 +10,9 @@ WORKDIR /src
 COPY pom.xml .
 COPY monolito-modular/pom.xml monolito-modular/
 COPY comparativa-clean/pom.xml comparativa-clean/
+COPY microservicios/citas-service/pom.xml microservicios/citas-service/
+COPY microservicios/notificaciones-service/pom.xml microservicios/notificaciones-service/
+COPY serverless/funciones-citas/pom.xml serverless/funciones-citas/
 RUN --mount=type=cache,target=/root/.m2 mvn -q -pl comparativa-clean -am dependency:go-offline
 COPY comparativa-clean/src comparativa-clean/src
 RUN --mount=type=cache,target=/root/.m2 mvn -q -pl comparativa-clean -am package -DskipTests

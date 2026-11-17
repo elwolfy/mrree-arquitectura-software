@@ -69,7 +69,9 @@ mvn -B -f m1-estilos verify -pl serverless/funciones-citas
 ### 1. Levantar los contenedores
 
 ```bash
-docker compose -f m1-estilos/docker-compose.dev.yml --profile serverless up -d --build
+./m1-estilos/scripts/levantar.sh serverless
+# O directamente desde m1-estilos:
+docker compose --profile serverless up -d --build
 ```
 
 ### 2. Verificar el tiempo de arranque en frío (*cold start*) en los logs
@@ -132,6 +134,6 @@ curl -i -X POST http://localhost:8081/api/citas \
 ### 5. Detener y eliminar los contenedores al finalizar
 
 ```bash
-docker compose -f m1-estilos/docker-compose.dev.yml --profile serverless down -v --remove-orphans
+./m1-estilos/scripts/limpiar.sh --forzar
 ```
 

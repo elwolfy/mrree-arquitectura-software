@@ -74,24 +74,26 @@ pe.utec.consular.monolito
 Desde la carpeta `m1-estilos`:
 
 ```powershell
-# Levantar el entorno de desarrollo (Postgres + Mailpit + Monolito)
-docker compose -f docker-compose.dev.yml up -d --build
+# Levantar el entorno (Postgres + Mailpit + Frontend + Monolito)
+.\scripts\levantar.ps1 monolito
+# O directamente con Docker Compose:
+docker compose --profile monolito up -d --build
 
 # Verificar que los servicios estén healthy y operativos
-docker compose -f docker-compose.dev.yml ps
+docker compose ps
 
 # Ver logs en vivo
-docker compose -f docker-compose.dev.yml logs -f monolito
+docker compose logs -f monolito
 
 # Detener y reiniciar volúmenes
-docker compose -f docker-compose.dev.yml down -v
+.\scripts\limpiar.ps1 -Forzar
 ```
 
 ### Opción B: Modo Híbrido en Eclipse (Desarrollo y Depuración)
 
 1. Inicie únicamente la base de datos y Mailpit desde `m1-estilos`:
    ```powershell
-   docker compose -f docker-compose.dev.yml up -d postgres mailpit
+   docker compose up -d postgres mailpit
    ```
 2. Abra Eclipse / Spring Tools Suite e importe `m1-estilos/monolito-modular` como proyecto Maven existente.
 3. Haga clic derecho sobre `MonolitoApplication.java` -> *Run As > Spring Boot App*.

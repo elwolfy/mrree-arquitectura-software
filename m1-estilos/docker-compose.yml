@@ -32,6 +32,36 @@ services:
     networks:
       - frontal
       - datos
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8025/livez >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: m1-frontend
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      API_BASE_URL: http://localhost:8081
+      MODULO: m1
+      FUNC_CITAS: "true"
+      FUNC_TRAMITES: "false"
+      FUNC_PAGOS: "false"
+      FUNC_BFF: "false"
+      FUNC_HISTORIAL: "false"
+    ports:
+      - "4200:80"
+    networks:
+      - frontal
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/assets/config.json | grep -q apiBaseUrl || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   monolito:
     profiles: ["monolito"]
@@ -59,6 +89,45 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
+
+  clean:
+    profiles: ["clean"]
+    build:
+      context: .
+      dockerfile: comparativa-clean/Dockerfile
+    container_name: m1-clean
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      CONSISTENCIA_MODO: ${CONSISTENCIA_MODO:-CP}
+      NOTIFICACIONES_CANAL: ${NOTIFICACIONES_CANAL:-CONSOLA}
+      NOTIFICACIONES_SIMULAR_FALLA: ${NOTIFICACIONES_SIMULAR_FALLA:-false}
+    ports:
+      - "8081:8081"
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
 
   notificaciones:
     profiles: ["microservicios"]
@@ -85,6 +154,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
 
   citas:
     profiles: ["microservicios"]
@@ -100,6 +175,7 @@ services:
       DB_USERNAME: citas_app
       DB_PASSWORD: citas_pwd
       NOTIFICACIONES_URL: http://notificaciones:8084
+      NOTIFICACIONES_SIMULAR_FALLA: ${NOTIFICACIONES_SIMULAR_FALLA:-false}
     ports:
       - "8081:8081"
     networks:
@@ -110,6 +186,12 @@ services:
         condition: service_healthy
       notificaciones:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
 
   fn-notificar:
     profiles: ["serverless"]
@@ -135,6 +217,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
 
   fn-consultas:
     profiles: ["serverless"]
@@ -156,6 +244,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
 
   fn-reservar:
     profiles: ["serverless"]
@@ -180,6 +274,12 @@ services:
         condition: service_healthy
       fn-notificar:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
 
   enrutador:
     profiles: ["serverless"]
@@ -198,6 +298,26 @@ services:
         condition: service_healthy
       fn-reservar:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/api/sistema/info | grep -q SERVERLESS || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 5s
+      retries: 5
+
+  k6:
+    profiles: ["carga"]
+    image: grafana/k6:0.54.0
+    container_name: m1-k6
+    volumes:
+      - ../docs/pruebas/k6:/scripts:ro
+    environment:
+      OBJETIVO: ${OBJETIVO:-http://host.docker.internal:8081}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: ["run", "/scripts/${K6_SCRIPT:-citas.js}"]
+    networks:
+      - frontal
 
 networks:
   frontal:
@@ -208,3 +328,4 @@ networks:
 volumes:
   m1_postgres_data:
     name: m1_postgres_data
+

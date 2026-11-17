@@ -86,7 +86,9 @@ La misma funcionalidad de reserva de citas y envío de avisos del monolito modul
 ### Paso 1: Levantar la variante microservicios
 Desde la carpeta `m1-estilos`:
 ```powershell
-docker compose -f docker-compose.dev.yml --profile microservicios up -d --build
+.\scripts\levantar.ps1 microservicios
+# O directamente con Docker Compose:
+docker compose --profile microservicios up -d --build
 ```
 
 ### Paso 2: Verificar información del sistema y reserva normal (`ENVIADA`)
@@ -117,7 +119,7 @@ curl -i -X POST http://localhost:8081/api/citas `
 
 ### Paso 4: Restaurar o detener el entorno
 ```powershell
-docker compose -f docker-compose.dev.yml --profile microservicios down -v
+.\scripts\limpiar.ps1 -Forzar
 ```
 
 ---
@@ -126,7 +128,7 @@ docker compose -f docker-compose.dev.yml --profile microservicios down -v
 
 1. Levante PostgreSQL y Mailpit desde `m1-estilos`:
    ```powershell
-   docker compose -f docker-compose.dev.yml up -d postgres mailpit
+   docker compose up -d postgres mailpit
    ```
 2. En Eclipse, importe `m1-estilos/microservicios/notificaciones-service` y `m1-estilos/microservicios/citas-service` como *Existing Maven Projects*.
 3. Ejecute `NotificacionesApplication` y `CitasApplication` con *Run As → Spring Boot App* y perfil activo `local`.

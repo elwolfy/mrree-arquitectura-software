@@ -41,7 +41,7 @@ pe.utec.consular.clean
 
 1. Levante PostgreSQL desde `m1-estilos`:
    ```powershell
-   docker compose -f docker-compose.dev.yml up -d postgres
+   docker compose up -d postgres
    ```
 2. En Eclipse / Spring Tools Suite, importe `m1-estilos/comparativa-clean` como *Existing Maven Project*.
 3. Ejecute `pe.utec.consular.clean.CleanApplication` (*Run As → Spring Boot App*) con el perfil activo `local`.

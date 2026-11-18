@@ -1,0 +1,119 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+gateway:
+  ratelimit:
+    identidad-por-segundo: ${RATELIMIT_IDENTIDAD_RPS:5}
+
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: citas-route
+            uri: ${CITAS_SERVICE_URL:http://citas-service:8081}
+            predicates:
+              - Path=/api/citas/**, /api/oficinas/**
+
+          - id: tramites-route
+            uri: ${TRAMITES_SERVICE_URL:http://tramites-service:8082}
+            predicates:
+              - Path=/api/tramites/**
+
+          - id: tarifas-pagos-route
+            uri: ${PAGOS_SERVICE_URL:http://pagos-service:8083}
+            predicates:
+              - Path=/api/tarifas/**, /api/pagos/**
+
+          - id: avisos-route
+            uri: ${NOTIFICACIONES_SERVICE_URL:http://notificaciones-service:8084}
+            predicates:
+              - Path=/api/avisos/**
+
+          - id: identidad-route
+            uri: ${IDENTIDAD_SERVICE_URL:http://identidad-service:8086}
+            predicates:
+              - Path=/api/identidad/**
+
+          - id: bff-route
+            uri: ${BFF_WEB_URL:http://bff-web:8085}
+            predicates:
+              - Path=/bff/**
+
+          # Rutas de agregación OpenAPI para Swagger UI en localhost:8080/swagger-ui.html
+          - id: openapi-citas
+            uri: ${CITAS_SERVICE_URL:http://citas-service:8081}
+            predicates:
+              - Path=/openapi/citas
+            filters:
+              - SetPath=/v3/api-docs
+
+          - id: openapi-tramites
+            uri: ${TRAMITES_SERVICE_URL:http://tramites-service:8082}
+            predicates:
+              - Path=/openapi/tramites
+            filters:
+              - SetPath=/v3/api-docs
+
+          - id: openapi-pagos
+            uri: ${PAGOS_SERVICE_URL:http://pagos-service:8083}
+            predicates:
+              - Path=/openapi/pagos
+            filters:
+              - SetPath=/v3/api-docs
+
+          - id: openapi-notificaciones
+            uri: ${NOTIFICACIONES_SERVICE_URL:http://notificaciones-service:8084}
+            predicates:
+              - Path=/openapi/notificaciones
+            filters:
+              - SetPath=/v3/api-docs
+
+          - id: openapi-identidad
+            uri: ${IDENTIDAD_SERVICE_URL:http://identidad-service:8086}
+            predicates:
+              - Path=/openapi/identidad
+            filters:
+              - SetPath=/v3/api-docs
+
+          - id: openapi-bff
+            uri: ${BFF_WEB_URL:http://bff-web:8085}
+            predicates:
+              - Path=/openapi/bff
+            filters:
+              - SetPath=/v3/api-docs
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: 1. BFF Web (Inicio y Fachada)
+        url: /openapi/bff
+      - name: 2. Citas Consulares
+        url: /openapi/citas
+      - name: 3. Trámites Consulares
+        url: /openapi/tramites
+      - name: 4. Tarifas y Pagos
+        url: /openapi/pagos
+      - name: 5. Identidad (ACL PIDE)
+        url: /openapi/identidad
+      - name: 6. Notificaciones y Avisos
+        url: /openapi/notificaciones
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [corr=%X{correlationId:-sin-id}] %-5level %logger{36} - %msg%n"
+

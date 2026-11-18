@@ -169,6 +169,50 @@
             </modules>
         </profile>
         <profile>
+            <id>modulo-notificaciones</id>
+            <activation>
+                <file>
+                    <exists>notificaciones-service/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>notificaciones-service</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>modulo-pagos</id>
+            <activation>
+                <file>
+                    <exists>pagos-service/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>pagos-service</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>modulo-bff-web</id>
+            <activation>
+                <file>
+                    <exists>bff-web/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>bff-web</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>modulo-gateway</id>
+            <activation>
+                <file>
+                    <exists>gateway/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>gateway</module>
+            </modules>
+        </profile>
+        <profile>
             <id>cobertura</id>
             <build>
                 <plugins>

@@ -26,7 +26,9 @@
 | **08-1** | M2: Esqueleto base, RabbitMQ y `citas-service` | `m2-integracion/citas-service` | Completado |
 | **08-2** | M2: `tramites-service` (Factory Method, Builder, eventos y gRPC) | `m2-integracion/tramites-service` | Completado |
 | **08-3** | M2: `identidad-service` (Adapter + ACL) y `pide-simulador` | `m2-integracion/identidad-service`, `pide-simulador` | Completado |
-| **08-4 a 08-7** | M2: `notificaciones`, `pagos`, `bff`, `gateway`, `sidecar` | `m2-integracion/*` | Pendiente |
+| **08-4** | M2: `notificaciones-service` (Observer distribuido, idempotencia, DLQ) | `m2-integracion/notificaciones-service` | Completado |
+| **08-5** | M2: `pagos-service` (Strategy), `bff-web` (Facade) y `gateway` | `pagos-service`, `bff-web`, `gateway` | Completado |
+| **08-6 a 08-7** | M2: `sidecar` Envoy, contratos DDD y Asignación A2 | `m2-integracion/*`, `docs/ddd/*` | Pendiente |
 | **09** | M3: Persistencia, Saga, Outbox, Event Sourcing y CQRS | `m3-datos/*` | Pendiente |
 | **10** | M4: Observabilidad (OpenTelemetry + Grafana LGTM) | `m4-observabilidad/*` | Pendiente |
 | **11–13** | ADRs, C4, soluciones de asignaciones y verificación final | `docs/*` | Pendiente |
@@ -348,6 +350,34 @@ try { Invoke-WebRequest -Uri "http://localhost:8086/api/identidad/validaciones" 
 
 # 2.3 DNI no encontrado (48888888) -> 404 "DNI no encontrado"
 try { Invoke-WebRequest -Uri "http://localhost:8086/api/identidad/validaciones" -Method POST -ContentType "application/json" -Body '{"dni":"48888888"}' -UseBasicParsing } catch { Write-Host "HTTP:" ([int]$_.Exception.Response.StatusCode) }
+
+# 2.4 Detener contenedores al terminar
+.\m2-integracion\scripts\detener.ps1
+```
+
+---
+
+## Prompts 08-4 y 08-5 — M2: `notificaciones-service`, `pagos-service`, `bff-web` y `gateway`
+
+### 1. Pruebas automatizadas de los 7 módulos de M2
+```powershell
+mvn -B -f m2-integracion verify
+```
+
+### 2. Pruebas en contenedores Docker a través del API Gateway (`:8080`)
+```powershell
+# Levantar todos los servicios de M2
+.\m2-integracion\scripts\levantar.ps1
+
+# 2.1 Iniciar trámite mediante la fachada del BFF (POST /bff/tramites vía Gateway)
+Invoke-RestMethod -Uri "http://localhost:8080/bff/tramites" -Method POST -ContentType "application/json; charset=utf-8" -Body ([System.Text.Encoding]::UTF8.GetBytes('{"dni":"40000001","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}')) | ConvertTo-Json -Depth 5
+
+# 2.2 Consultar inicio ciudadano agregado (citas + trámites + avisos)
+Invoke-RestMethod -Uri "http://localhost:8080/bff/inicio?dni=40000001" | ConvertTo-Json -Depth 5
+
+# 2.3 Probar degradación elegante deteniendo m2-notificaciones
+docker stop m2-notificaciones
+Invoke-RestMethod -Uri "http://localhost:8080/bff/inicio?dni=40000001" | ConvertTo-Json -Depth 5
 
 # 2.4 Detener contenedores al terminar
 .\m2-integracion\scripts\detener.ps1

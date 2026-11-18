@@ -1,0 +1,37 @@
+server:
+  port: 8085
+  shutdown: graceful
+
+servicios:
+  citas-url: ${CITAS_SERVICE_URL:http://citas-service:8081}
+  tramites-url: ${TRAMITES_SERVICE_URL:http://tramites-service:8082}
+  pagos-url: ${PAGOS_SERVICE_URL:http://pagos-service:8083}
+  notificaciones-url: ${NOTIFICACIONES_SERVICE_URL:http://notificaciones-service:8084}
+  identidad-url: ${IDENTIDAD_SERVICE_URL:http://identidad-service:8086}
+  timeout-ms: 2000
+
+spring:
+  application:
+    name: bff-web
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [corr=%X{correlationId:-sin-id}] %-5level %logger{36} - %msg%n"
+

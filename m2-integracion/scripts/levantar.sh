@@ -26,7 +26,7 @@ if ! docker compose up -d --build --remove-orphans; then
   exit 1
 fi
 
-CONTENEDORES=("m2-postgres" "m2-rabbitmq" "m2-mailpit" "m2-pide" "m2-citas" "m2-tramites" "m2-identidad")
+CONTENEDORES=("m2-postgres" "m2-rabbitmq" "m2-mailpit" "m2-pide" "m2-citas" "m2-tramites" "m2-pagos" "m2-notificaciones" "m2-identidad" "m2-bff" "m2-gateway")
 TIEMPO_MAXIMO_SEGUNDOS=120
 INTERVALO_SEGUNDOS=2
 
@@ -57,13 +57,17 @@ echo ""
 echo "=================================================================="
 echo " Servicios activos — Módulo 2 (Integración y Comunicación)"
 echo "=================================================================="
-echo "  * citas-service (Swagger UI):     http://localhost:8081/swagger-ui.html"
-echo "  * citas-service (OpenAPI):        http://localhost:8081/v3/api-docs"
-echo "  * tramites-service (Swagger UI):  http://localhost:8082/swagger-ui.html"
-echo "  * tramites-service (gRPC):        localhost:9082"
-echo "  * identidad-service (Swagger UI): http://localhost:8086/swagger-ui.html"
-echo "  * Simulador PIDE (WireMock):      http://localhost:8089/__admin/mappings"
-echo "  * RabbitMQ Consola Web:           http://localhost:15672  (usuario: consular / clave: consular)"
-echo "  * Mailpit Web UI:                 http://localhost:8025"
-echo "  * PostgreSQL:                     localhost:5432          (BD: consular)"
+echo "  * API Gateway (Entrada única):       http://localhost:8080"
+echo "  * Swagger UI Agregado (Gateway):     http://localhost:8080/swagger-ui.html"
+echo "  * bff-web (Swagger UI):              http://localhost:8085/swagger-ui.html"
+echo "  * citas-service (Swagger UI):        http://localhost:8081/swagger-ui.html"
+echo "  * tramites-service (Swagger UI):     http://localhost:8082/swagger-ui.html"
+echo "  * tramites-service (gRPC):           localhost:9082"
+echo "  * pagos-service (Swagger UI):        http://localhost:8083/swagger-ui.html"
+echo "  * notificaciones-service (Swagger):  http://localhost:8084/swagger-ui.html"
+echo "  * identidad-service (Swagger UI):    http://localhost:8086/swagger-ui.html"
+echo "  * Simulador PIDE (WireMock):         http://localhost:8089/__admin/mappings"
+echo "  * RabbitMQ Consola Web:              http://localhost:15672  (usuario: consular / clave: consular)"
+echo "  * Mailpit Web UI:                    http://localhost:8025"
+echo "  * PostgreSQL:                        localhost:5432          (BD: consular)"
 echo "=================================================================="

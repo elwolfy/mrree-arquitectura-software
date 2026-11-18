@@ -1,0 +1,8 @@
+# Perfil 'local' para ejecución desde Eclipse en modo híbrido (regla 02)
+servicios:
+  citas-url: http://localhost:8081
+  tramites-url: http://localhost:8082
+  pagos-url: http://localhost:8083
+  notificaciones-url: http://localhost:8084
+  identidad-url: http://localhost:8086
+

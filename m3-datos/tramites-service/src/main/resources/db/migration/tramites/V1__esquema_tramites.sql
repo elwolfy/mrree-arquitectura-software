@@ -1,0 +1,52 @@
+-- ==============================================================================
+-- V1__esquema_tramites.sql — Esquema de base de datos para tramites-service (M3)
+-- ==============================================================================
+
+CREATE SCHEMA IF NOT EXISTS tramites;
+
+CREATE SEQUENCE IF NOT EXISTS tramites.tramite_codigo_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE IF NOT EXISTS tramites.tramite (
+    id           UUID PRIMARY KEY,
+    codigo       VARCHAR(20) NOT NULL UNIQUE,
+    dni          CHAR(8) NOT NULL,
+    nombres      VARCHAR(120) NOT NULL,
+    email        VARCHAR(120) NOT NULL,
+    tipo_tramite VARCHAR(25) NOT NULL,
+    subtipo      VARCHAR(30) NOT NULL,
+    pais         CHAR(2) NOT NULL,
+    folios       INT NOT NULL CHECK (folios > 0),
+    idioma       VARCHAR(10) NOT NULL,
+    estado       VARCHAR(20) NOT NULL,
+    monto        NUMERIC(10, 2) NOT NULL,
+    creado_en    TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_tramite_dni ON tramites.tramite(dni);
+
+-- ------------------------------------------------------------------------------
+-- MODELO DOCUMENTAL (JSONB + Índice GIN) — tramites.expediente
+-- ------------------------------------------------------------------------------
+-- Cada tipo de trámite consular requiere metadatos específicos distintos:
+--   * LEGALIZACION      -> {"folios": <int>, "idioma": "<str>"}
+--   * APOSTILLA         -> {"paisDestino": "<ISO-2>", "idioma": "<str>"}
+--   * REGISTRO_CONSULAR -> {"paisDestino": "<ISO-2>", "idioma": "<str>"}
+-- En lugar de contaminar la tabla relacional con decenas de columnas opcionales (NULL)
+-- o caer en el antipatrón EAV (Entity-Attribute-Value), almacenamos la ficha variable
+-- del expediente como un documento binario estructurado (JSONB) e indexamos todas sus
+-- rutas clave-valor mediante un índice invertido generalizado (GIN). Esto permite
+-- consultas de contención de subdocumentos (`metadatos @> '{"paisDestino":"ES"}'`)
+-- de alta velocidad sin sacrificar la integridad transaccional ACID de PostgreSQL.
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tramites.expediente (
+    tramite_id UUID PRIMARY KEY,
+    metadatos  JSONB NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_expediente_metadatos
+    ON tramites.expediente USING GIN (metadatos);

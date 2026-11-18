@@ -1,0 +1,20 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "url": "/ws/reniec/consultarDatos"
+  },
+  "response": {
+    "status": 200,
+    "fixedDelayMilliseconds": 300,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "coResultado": "0999",
+      "deResultado": "NUMERO DE DNI NO EXISTE EN EL PADRON ELECTORAL",
+      "datosPersona": null
+    }
+  }
+}
+

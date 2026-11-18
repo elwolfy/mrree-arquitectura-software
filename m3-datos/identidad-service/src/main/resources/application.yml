@@ -1,0 +1,34 @@
+server:
+  port: 8086
+  shutdown: graceful
+
+pide:
+  url: ${PIDE_URL:http://pide-simulador:8080}
+  timeout-ms: 2000
+  reintentos: 2
+
+spring:
+  application:
+    name: identidad-service
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [corr=%X{correlationId:-sin-id}] %-5level %logger{36} - %msg%n"
+

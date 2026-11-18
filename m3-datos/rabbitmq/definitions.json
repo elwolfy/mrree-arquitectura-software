@@ -1,0 +1,113 @@
+{
+  "users": [
+    {
+      "name": "consular",
+      "password": "consular",
+      "tags": ["administrator"]
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "consular",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "consular.eventos",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "consular.eventos.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "notificaciones.cita.reservada",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "notificaciones.cita.reservada.dlq"
+      }
+    },
+    {
+      "name": "notificaciones.cita.reservada.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notificaciones.tramite.registrado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "notificaciones.tramite.registrado.dlq"
+      }
+    },
+    {
+      "name": "notificaciones.tramite.registrado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "notificaciones.cita.reservada",
+      "destination_type": "queue",
+      "routing_key": "cita.reservada",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "notificaciones.cita.reservada.dlq",
+      "destination_type": "queue",
+      "routing_key": "notificaciones.cita.reservada.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "notificaciones.tramite.registrado",
+      "destination_type": "queue",
+      "routing_key": "tramite.registrado",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "notificaciones.tramite.registrado.dlq",
+      "destination_type": "queue",
+      "routing_key": "notificaciones.tramite.registrado.dlq",
+      "arguments": {}
+    }
+  ]
+}

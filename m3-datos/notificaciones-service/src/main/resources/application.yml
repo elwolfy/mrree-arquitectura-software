@@ -1,0 +1,83 @@
+server:
+  port: 8084
+  shutdown: graceful
+
+notificaciones:
+  fallar-siempre: ${NOTIFICACIONES_FALLAR_SIEMPRE:false}
+
+spring:
+  application:
+    name: notificaciones-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/consular?currentSchema=notificaciones
+    username: ${DB_USERNAME:notificaciones_app}
+    password: ${DB_PASSWORD:notificaciones_pwd}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 2000
+      validation-timeout: 1000
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: notificaciones
+        format_sql: false
+
+  flyway:
+    enabled: true
+    schemas: notificaciones
+    default-schema: notificaciones
+    locations: classpath:db/migration/notificaciones
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:consular}
+    password: ${RABBITMQ_PASSWORD:consular}
+    listener:
+      simple:
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 4
+          initial-interval: 200ms
+          multiplier: 2.0
+          max-interval: 2000ms
+
+  mail:
+    host: ${MAIL_HOST:mailpit}
+    port: ${MAIL_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [corr=%X{correlationId:-sin-id}] %-5level %logger{36} - %msg%n"
+

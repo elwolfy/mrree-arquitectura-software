@@ -358,39 +358,6 @@ try { Invoke-WebRequest -Uri "http://localhost:8086/api/identidad/validaciones" 
 
 ---
 
-## Prompts 08-6 y 08-7 — M2: Sidecar Envoy, gRPC vs. REST, Verificación Integral y Asignación A2 (`main` y `solucion/a2`)
-
-### 1. En `main` (Etiqueta `s3` — Andamiaje de A2 y Verificación de M2)
-```powershell
-git checkout main
-
-# 1.1 Ejecutar pruebas de todo el módulo M2 (TramiteObservadoConsumerTest aparece como skipped)
-mvn -B -f m2-integracion verify
-
-# 1.2 Levantar todos los contenedores de M2 (incluyendo m2-frontend en http://localhost:4200)
-.\m2-integracion\scripts\levantar.ps1
-
-# 1.3 Iniciar trámite y comparar REST vs. gRPC
-$trm = Invoke-RestMethod -Uri "http://localhost:8080/bff/tramites" -Method POST -ContentType "application/json; charset=utf-8" -Body '{"dni":"40000001","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
-.\m2-integracion\scripts\grpc-consultar.ps1 $trm.id
-
-# 1.4 Observar trámite en main -> pasa a OBSERVADO y deja 1 mensaje esperando en notificaciones.tramite.observado
-Invoke-RestMethod -Uri "http://localhost:8080/api/tramites/$($trm.id)/observacion" -Method PUT -ContentType "application/json; charset=utf-8" -Body '{"motivo":"Copia ilegible en el reverso"}' | ConvertTo-Json
-```
-
-### 2. En `solucion/a2` (Solución de Referencia de A2)
-```powershell
-git checkout solucion/a2
-
-# 2.1 Ejecutar prueba de integración del consumidor TramiteObservadoConsumer (en verde)
-mvn -B -f m2-integracion verify -pl notificaciones-service -Dit.test=TramiteObservadoConsumerTest
-
-# 2.2 Verificar que git diff --stat main...solucion/a2 muestra únicamente los 5 archivos de A2
-git diff --stat main...solucion/a2
-```
-
----
-
 ## Prompts 08-4 y 08-5 — M2: `notificaciones-service`, `pagos-service`, `bff-web` y `gateway`
 
 ### 1. Pruebas automatizadas de los 7 módulos de M2
@@ -448,4 +415,39 @@ mvn -B -f m2-integracion verify -pl notificaciones-service -Dit.test=TramiteObse
 
 # 2.2 Verificar que git diff --stat main...solucion/a2 muestra únicamente los 5 archivos de A2
 git diff --stat main...solucion/a2
+```
+
+---
+
+## Prompt 09-1 — M3: Base de `m3-datos`, Esquemas por Servicio (*Database-per-Service*) y Expediente Documental (`JSONB` + `GIN`)
+
+### 1. Compilación y Pruebas de Integración (Testcontainers)
+```powershell
+# Ejecuta pruebas unitarias, ArchUnit y Testcontainers (incluyendo GET /api/tramites/buscar?pais=ES y bloqueo de pagos_app sobre tramites.expediente)
+mvn -B -f m3-datos verify
+```
+
+### 2. Verificación en Docker Compose (`m3-*`) y `psql`
+```powershell
+# 2.1 Levantar contenedores m3-* (incluyendo m3-postgres y m3-redis)
+.\m3-datos\scripts\levantar.ps1
+
+# 2.2 Inspeccionar esquemas aislados por Bounded Context y el índice GIN en tramites.expediente
+.\m3-datos\scripts\psql.ps1 -c "\dn"
+.\m3-datos\scripts\psql.ps1 -c "\d tramites.expediente"
+
+# 2.3 Registrar trámites de los 3 tipos a través del API Gateway (:8080)
+Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/tramites" -ContentType "application/json" -Body '{"dni":"40000001","nombres":"Ana Perez","email":"ana@correo.lab","tipoTramite":"LEGALIZACION","pais":"ES","folios":3,"idioma":"ES"}'
+Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/tramites" -ContentType "application/json" -Body '{"dni":"40000002","nombres":"Carlos Mendoza","email":"carlos@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
+Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/tramites" -ContentType "application/json" -Body '{"dni":"40000003","nombres":"Elena Vargas","email":"elena@correo.lab","tipoTramite":"REGISTRO_CONSULAR","pais":"ES","folios":1,"idioma":"ES"}'
+
+# 2.4 Búsqueda documental por operador JSONB (@>) vía REST y vía SQL en psql
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/tramites/buscar?pais=ES" | ConvertTo-Json -Depth 5
+.\m3-datos\scripts\psql.ps1 -c "SELECT t.codigo, e.metadatos->>'idioma' AS idioma FROM tramites.expediente e JOIN tramites.tramite t ON t.id = e.tramite_id WHERE e.metadatos @> '{""paisDestino"":""ES""}';"
+
+# 2.5 Verificar aislamiento Database-per-Service (pagos_app NO puede leer tramites.expediente)
+docker exec m3-postgres psql -U pagos_app -d consular -c "SELECT * FROM tramites.expediente;"
+
+# 2.6 Detener y limpiar contenedores al terminar
+.\m3-datos\scripts\limpiar.ps1 -Forzar
 ```

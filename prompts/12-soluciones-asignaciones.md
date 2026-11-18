@@ -18,10 +18,9 @@ Generada en el prompt 07-1. En este paso solo se verifica que siga vigente (reba
 
 Generada en el prompt 08-7. Solo verificar vigencia.
 
-## A3 — `solucion/a3` (m3-datos)
+## A3 — `solucion/a3`
 
-- Conceptual: tabla de pasos y compensaciones de la saga completa en `docs/asignaciones/A3-solucion.md` (qué deshace cada paso, por qué orquestación y no coreografía).
-- Práctica: manejador de `emision.fallida` en el orquestador → anulación en pagos (endpoint o comando ya existentes) → trámite `RECHAZADO` con motivo; quitar el log de advertencia y `@Disabled`.
+Generada en el prompt 09-6. Solo verificar vigencia.
 
 ## A4 — `solucion/a4` (m3-datos)
 

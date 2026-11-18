@@ -1,0 +1,4 @@
+# Perfil 'local' para ejecución desde Eclipse en modo híbrido (regla 02)
+server:
+  port: 8083
+

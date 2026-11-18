@@ -1,0 +1,137 @@
+{
+  "info": {
+    "_postman_id": "a2b8c910-4f12-4a8e-9b11-consularm2001",
+    "name": "Plataforma Consular — Módulo 2 (Integración y Comunicación)",
+    "description": "Colección de pruebas del Módulo 2 a través del API Gateway (http://localhost:8080): validación de identidad con ACL hacia PIDE (3 casos de DNI), fachada de inicio de trámite en BFF, consulta de trámites, cálculo de tarifas con Strategy y vista agregada del ciudadano.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "gatewayUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "tramiteId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Identidad (ACL PIDE) — DNI Válido 40000001 (200 OK)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dni\": \"40000001\"\n}"
+        },
+        "url": {
+          "raw": "{{gatewayUrl}}/api/identidad/validaciones",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "identidad", "validaciones"]
+        }
+      }
+    },
+    {
+      "name": "2. Identidad (ACL PIDE) — DNI Fallecido 49999999 (422 Identidad no vigente)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dni\": \"49999999\"\n}"
+        },
+        "url": {
+          "raw": "{{gatewayUrl}}/api/identidad/validaciones",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "identidad", "validaciones"]
+        }
+      }
+    },
+    {
+      "name": "3. Identidad (ACL PIDE) — DNI No Encontrado 48888888 (404 Not Found)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dni\": \"48888888\"\n}"
+        },
+        "url": {
+          "raw": "{{gatewayUrl}}/api/identidad/validaciones",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "identidad", "validaciones"]
+        }
+      }
+    },
+    {
+      "name": "4. BFF Fachada — Iniciar Trámite (POST /bff/tramites)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Correlation-Id", "value": "corr-postman-m2-001" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dni\": \"40000001\",\n  \"email\": \"ana@correo.lab\",\n  \"tipoTramite\": \"APOSTILLA\",\n  \"pais\": \"ES\",\n  \"folios\": 2,\n  \"idioma\": \"ES\"\n}"
+        },
+        "url": {
+          "raw": "{{gatewayUrl}}/bff/tramites",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["bff", "tramites"]
+        }
+      }
+    },
+    {
+      "name": "5. Tarifas (Strategy) — Calcular Tarifa REGISTRO_CONSULAR en ES",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{gatewayUrl}}/api/tarifas?tipoTramite=REGISTRO_CONSULAR&pais=ES",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "tarifas"],
+          "query": [
+            { "key": "tipoTramite", "value": "REGISTRO_CONSULAR" },
+            { "key": "pais", "value": "ES" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. Trámites — Listar Trámites por DNI",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{gatewayUrl}}/api/tramites?dni=40000001",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "tramites"],
+          "query": [
+            { "key": "dni", "value": "40000001" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. BFF Agregación — Inicio del Ciudadano (GET /bff/inicio?dni=40000001)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{gatewayUrl}}/bff/inicio?dni=40000001",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["bff", "inicio"],
+          "query": [
+            { "key": "dni", "value": "40000001" }
+          ]
+        }
+      }
+    }
+  ]
+}
+

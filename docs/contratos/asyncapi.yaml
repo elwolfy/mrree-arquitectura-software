@@ -1,0 +1,186 @@
+asyncapi: 3.0.0
+info:
+  title: Plataforma Digital de Servicios Consulares — Contratos de Eventos (M2)
+  version: 1.0.0
+  description: >
+    Especificación AsyncAPI 3 de los eventos de integración publicados en el exchange
+    de RabbitMQ `consular.eventos` (tipo `topic`) durante el Módulo 2.
+
+servers:
+  rabbitmqLocal:
+    host: localhost:5672
+    protocol: amqp
+    description: Broker RabbitMQ 3 del entorno Docker Compose de M2
+
+channels:
+  citaReservada:
+    address: cita.reservada
+    description: Canal para el evento publicado por citas-service al confirmar una reserva consular.
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: consular.eventos
+          type: topic
+          durable: true
+          autoDelete: false
+        queue:
+          name: notificaciones.cita.reservada
+          durable: true
+          exclusive: false
+          autoDelete: false
+    messages:
+      citaReservadaMessage:
+        $ref: '#/components/messages/CitaReservada'
+
+  tramiteRegistrado:
+    address: tramite.registrado
+    description: Canal para el evento publicado por tramites-service al registrar un trámite consular.
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: consular.eventos
+          type: topic
+          durable: true
+          autoDelete: false
+        queue:
+          name: notificaciones.tramite.registrado
+          durable: true
+          exclusive: false
+          autoDelete: false
+    messages:
+      tramiteRegistradoMessage:
+        $ref: '#/components/messages/TramiteRegistrado'
+
+operations:
+  publicarCitaReservada:
+    action: send
+    channel:
+      $ref: '#/channels/citaReservada'
+    summary: citas-service publica cita.reservada al confirmar una cita.
+
+  consumirCitaReservada:
+    action: receive
+    channel:
+      $ref: '#/channels/citaReservada'
+    summary: notificaciones-service consume cita.reservada de la cola notificaciones.cita.reservada.
+
+  publicarTramiteRegistrado:
+    action: send
+    channel:
+      $ref: '#/channels/tramiteRegistrado'
+    summary: tramites-service publica tramite.registrado al registrar un nuevo trámite.
+
+  consumirTramiteRegistrado:
+    action: receive
+    channel:
+      $ref: '#/channels/tramiteRegistrado'
+    summary: notificaciones-service consume tramite.registrado de la cola notificaciones.tramite.registrado.
+
+components:
+  messages:
+    CitaReservada:
+      name: CitaReservada
+      title: Evento de Cita Reservada
+      contentType: application/json
+      headers:
+        $ref: '#/components/schemas/CabecerasEvento'
+      payload:
+        $ref: '#/components/schemas/CitaReservadaPayload'
+
+    TramiteRegistrado:
+      name: TramiteRegistrado
+      title: Evento de Trámite Registrado
+      contentType: application/json
+      headers:
+        $ref: '#/components/schemas/CabecerasEvento'
+      payload:
+        $ref: '#/components/schemas/TramiteRegistradoPayload'
+
+  schemas:
+    CabecerasEvento:
+      type: object
+      required:
+        - messageId
+        - tipoEvento
+        - ocurridoEn
+      properties:
+        messageId:
+          type: string
+          format: uuid
+          description: Identificador único del mensaje para control de idempotencia en el consumidor.
+        tipoEvento:
+          type: string
+          description: Routing key del evento (por ejemplo cita.reservada o tramite.registrado).
+        ocurridoEn:
+          type: string
+          format: date-time
+          description: Marca de tiempo ISO-8601 de emisión del evento.
+
+    CitaReservadaPayload:
+      type: object
+      required:
+        - citaId
+        - codigo
+        - dni
+        - email
+        - oficinaId
+        - fecha
+        - hora
+      properties:
+        citaId:
+          type: string
+          format: uuid
+        codigo:
+          type: string
+          example: CIT-2026-000001
+        dni:
+          type: string
+          pattern: '^\d{8}$'
+          example: '40000001'
+        email:
+          type: string
+          format: email
+          example: ana@correo.lab
+        oficinaId:
+          type: string
+          example: MAD
+        fecha:
+          type: string
+          format: date
+          example: '2026-11-24'
+        hora:
+          type: string
+          example: '09:00:00'
+
+    TramiteRegistradoPayload:
+      type: object
+      required:
+        - tramiteId
+        - codigo
+        - dni
+        - email
+        - tipoTramite
+      properties:
+        tramiteId:
+          type: string
+          format: uuid
+        codigo:
+          type: string
+          example: TRM-2026-000001
+        dni:
+          type: string
+          pattern: '^\d{8}$'
+          example: '40000001'
+        email:
+          type: string
+          format: email
+          example: ana@correo.lab
+        tipoTramite:
+          type: string
+          enum:
+            - LEGALIZACION
+            - APOSTILLA
+            - REGISTRO_CONSULAR
+

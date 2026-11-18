@@ -1,4 +1,4 @@
-package pe.utec.consular.gateway.filter;
+package pe.utec.consular.gateway;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -74,6 +74,23 @@
       "durable": true,
       "auto_delete": false,
       "arguments": {}
+    },
+    {
+      "name": "notificaciones.tramite.observado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "notificaciones.tramite.observado.dlq"
+      }
+    },
+    {
+      "name": "notificaciones.tramite.observado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
     }
   ],
   "bindings": [
@@ -107,6 +124,22 @@
       "destination": "notificaciones.tramite.registrado.dlq",
       "destination_type": "queue",
       "routing_key": "notificaciones.tramite.registrado.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "notificaciones.tramite.observado",
+      "destination_type": "queue",
+      "routing_key": "tramite.observado",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "notificaciones.tramite.observado.dlq",
+      "destination_type": "queue",
+      "routing_key": "notificaciones.tramite.observado.dlq",
       "arguments": {}
     }
   ]

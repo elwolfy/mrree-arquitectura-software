@@ -30,6 +30,10 @@ public class RabbitMessagingConfig {
     public static final String COLA_TRAMITE_REGISTRADO_DLQ = "notificaciones.tramite.registrado.dlq";
     public static final String RK_TRAMITE_REGISTRADO = "tramite.registrado";
 
+    public static final String COLA_TRAMITE_OBSERVADO = "notificaciones.tramite.observado";
+    public static final String COLA_TRAMITE_OBSERVADO_DLQ = "notificaciones.tramite.observado.dlq";
+    public static final String RK_TRAMITE_OBSERVADO = "tramite.observado";
+
     @Bean
     public TopicExchange consularEventosExchange() {
         return new TopicExchange(EXCHANGE_EVENTOS, true, false);
@@ -87,8 +91,30 @@ public class RabbitMessagingConfig {
     }
 
     @Bean
+    public Queue colaTramiteObservado() {
+        return QueueBuilder.durable(COLA_TRAMITE_OBSERVADO)
+                .withArgument("x-dead-letter-exchange", EXCHANGE_DLX)
+                .withArgument("x-dead-letter-routing-key", COLA_TRAMITE_OBSERVADO_DLQ)
+                .build();
+    }
+
+    @Bean
+    public Queue colaTramiteObservadoDlq() {
+        return QueueBuilder.durable(COLA_TRAMITE_OBSERVADO_DLQ).build();
+    }
+
+    @Bean
+    public Binding bindingTramiteObservado(Queue colaTramiteObservado, TopicExchange consularEventosExchange) {
+        return BindingBuilder.bind(colaTramiteObservado).to(consularEventosExchange).with(RK_TRAMITE_OBSERVADO);
+    }
+
+    @Bean
+    public Binding bindingTramiteObservadoDlq(Queue colaTramiteObservadoDlq, DirectExchange consularEventosDlx) {
+        return BindingBuilder.bind(colaTramiteObservadoDlq).to(consularEventosDlx).with(COLA_TRAMITE_OBSERVADO_DLQ);
+    }
+
+    @Bean
     public MessageConverter jackson2JsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
     }
 }
-

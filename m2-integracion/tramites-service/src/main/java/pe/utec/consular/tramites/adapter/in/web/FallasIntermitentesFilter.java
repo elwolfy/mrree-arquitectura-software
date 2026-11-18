@@ -16,7 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Filtro HTTP didáctico para simular fallas intermitentes ({@code 503 Service Unavailable})
@@ -32,6 +32,7 @@ public class FallasIntermitentesFilter extends OncePerRequestFilter {
 
     private final int porcentajeFallas;
     private final ObjectMapper objectMapper;
+    private final AtomicInteger acumulador = new AtomicInteger(0);
 
     public FallasIntermitentesFilter(
             @Value("${fallas.intermitentes.porcentaje:0}") int porcentajeFallas,
@@ -53,8 +54,8 @@ public class FallasIntermitentesFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        int tirada = ThreadLocalRandom.current().nextInt(100);
-        if (tirada < porcentajeFallas) {
+        boolean debeFallar = decidirFallaDeterminista();
+        if (debeFallar) {
             log.warn("Simulando falla intermitente HTTP 503 en {} {} (porcentaje configurado: {}%)",
                     request.getMethod(), request.getRequestURI(), porcentajeFallas);
             ProblemDetail pd = ProblemDetail.forStatusAndDetail(
@@ -73,5 +74,16 @@ public class FallasIntermitentesFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
-}
 
+    private synchronized boolean decidirFallaDeterminista() {
+        if (porcentajeFallas >= 100) {
+            return true;
+        }
+        int nuevoValor = acumulador.addAndGet(porcentajeFallas);
+        if (nuevoValor >= 100) {
+            acumulador.addAndGet(-100);
+            return true;
+        }
+        return false;
+    }
+}

@@ -42,7 +42,8 @@ try {
         @{ Nombre = "m2-notificaciones"; Servicio = "notificaciones-service (8084)" },
         @{ Nombre = "m2-identidad";      Servicio = "identidad-service (8086)" },
         @{ Nombre = "m2-bff";            Servicio = "bff-web (8085)" },
-        @{ Nombre = "m2-gateway";        Servicio = "API Gateway (8080)" }
+        @{ Nombre = "m2-gateway";        Servicio = "API Gateway (8080)" },
+        @{ Nombre = "m2-frontend";       Servicio = "Frontend Ciudadano M2 (4200)" }
     )
 
     $TiempoMaximoSegundos = 120
@@ -85,6 +86,7 @@ try {
     Write-Host "`n==================================================================" -ForegroundColor Cyan
     Write-Host " Servicios activos - Modulo 2 (Integracion y Comunicacion)" -ForegroundColor Cyan
     Write-Host "==================================================================" -ForegroundColor Cyan
+    Write-Host "  * Frontend Ciudadano (Modo M2):      http://localhost:4200"
     Write-Host "  * API Gateway (Entrada unica):       http://localhost:8080"
     Write-Host "  * Swagger UI Agregado (Gateway):     http://localhost:8080/swagger-ui.html"
     Write-Host "  * bff-web (Swagger UI):              http://localhost:8085/swagger-ui.html"

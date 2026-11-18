@@ -10,12 +10,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pe.utec.consular.tramites.application.port.in.ConsultarTramiteUseCase;
 import pe.utec.consular.tramites.application.port.in.ListarTramitesPorDniUseCase;
+import pe.utec.consular.tramites.application.port.in.ObservarTramiteCommand;
+import pe.utec.consular.tramites.application.port.in.ObservarTramiteUseCase;
 import pe.utec.consular.tramites.application.port.in.RegistrarTramiteCommand;
 import pe.utec.consular.tramites.application.port.in.RegistrarTramiteUseCase;
 import pe.utec.consular.tramites.domain.Tramite;
@@ -26,26 +29,26 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Controlador REST para el registro y consulta de trámites consulares (:8082).
- * <p>Concepto: Adaptador de entrada web en arquitectura hexagonal (sección 1.3)
- * y punto de comparación frente al servicio gRPC (:9082).
- * <p>Sesión: S3.
+ * Controlador REST para el registro, observación y consulta de trámites consulares (:8082).
  */
 @RestController
 @RequestMapping("/api/tramites")
-@Tag(name = "Trámites", description = "Registro y consulta de trámites consulares (Legalización, Apostilla y Registro Consular)")
+@Tag(name = "Trámites", description = "Registro, observación y consulta de trámites consulares (Legalización, Apostilla y Registro Consular)")
 public class TramiteController {
 
     private final RegistrarTramiteUseCase registrarTramiteUseCase;
+    private final ObservarTramiteUseCase observarTramiteUseCase;
     private final ConsultarTramiteUseCase consultarTramiteUseCase;
     private final ListarTramitesPorDniUseCase listarTramitesPorDniUseCase;
     private final TramiteWebMapper mapper;
 
     public TramiteController(RegistrarTramiteUseCase registrarTramiteUseCase,
+                             ObservarTramiteUseCase observarTramiteUseCase,
                              ConsultarTramiteUseCase consultarTramiteUseCase,
                              ListarTramitesPorDniUseCase listarTramitesPorDniUseCase,
                              TramiteWebMapper mapper) {
         this.registrarTramiteUseCase = registrarTramiteUseCase;
+        this.observarTramiteUseCase = observarTramiteUseCase;
         this.consultarTramiteUseCase = consultarTramiteUseCase;
         this.listarTramitesPorDniUseCase = listarTramitesPorDniUseCase;
         this.mapper = mapper;
@@ -64,6 +67,21 @@ public class TramiteController {
         TramiteDto dto = mapper.aDto(tramite);
         URI location = URI.create("/api/tramites/" + tramite.getId());
         return ResponseEntity.created(location).body(dto);
+    }
+
+    @PutMapping("/{id}/observacion")
+    @Operation(summary = "Marca un trámite como OBSERVADO y publica el evento tramite.observado (Asignación A2)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Trámite marcado como OBSERVADO y evento publicado"),
+            @ApiResponse(responseCode = "404", description = "Trámite no encontrado"),
+            @ApiResponse(responseCode = "422", description = "El trámite no puede ser observado en su estado actual")
+    })
+    public ResponseEntity<TramiteDto> observarTramite(
+            @Parameter(description = "Identificador único UUID del trámite", required = true)
+            @PathVariable UUID id,
+            @Valid @RequestBody ObservarTramiteRequest request) {
+        Tramite tramite = observarTramiteUseCase.observar(new ObservarTramiteCommand(id, request.motivo()));
+        return ResponseEntity.ok(mapper.aDto(tramite));
     }
 
     @GetMapping("/{id}")
@@ -86,4 +104,3 @@ public class TramiteController {
         return ResponseEntity.ok(mapper.aListaDto(tramites));
     }
 }
-

@@ -52,20 +52,34 @@ public class TramiteFacade {
         Map<String, Object> tarifa = pagosClient.calcularTarifa(request.tipoTramite(), request.pais());
 
         // Paso 3: Registrar trámite en tramites-service
+        int folios = request.folios() != null && request.folios() > 0 ? request.folios() : 1;
+        String idioma = request.idioma() != null && !request.idioma().isBlank() ? request.idioma() : "ES";
         Map<String, Object> tramite = tramitesClient.registrarTramite(Map.of(
                 "dni", request.dni(),
                 "nombres", nombresCompletos,
                 "email", request.email(),
                 "tipoTramite", request.tipoTramite(),
                 "pais", request.pais(),
-                "folios", request.folios(),
-                "idioma", request.idioma()
+                "folios", folios,
+                "idioma", idioma
         ));
 
         log.info("TramiteFacade: trámite {} creado satisfactoriamente para {}",
                 tramite.get("codigo"), nombresCompletos);
 
         return new TramiteIniciadoResponse(
+                String.valueOf(tramite.get("id")),
+                String.valueOf(tramite.get("codigo")),
+                request.dni(),
+                nombresCompletos,
+                request.email(),
+                request.tipoTramite(),
+                String.valueOf(tramite.getOrDefault("subtipo", "")),
+                request.pais(),
+                String.valueOf(tramite.get("estado")),
+                tarifa.get("monto"),
+                String.valueOf(tarifa.getOrDefault("moneda", "PEN")),
+                String.valueOf(tramite.get("creadoEn")),
                 ciudadano,
                 tarifa,
                 tramite
@@ -84,16 +98,27 @@ public class TramiteFacade {
             String email,
             String tipoTramite,
             String pais,
-            int folios,
+            Integer folios,
             String idioma
     ) {
     }
 
     public record TramiteIniciadoResponse(
+            String id,
+            String codigo,
+            String dni,
+            String nombresCiudadano,
+            String email,
+            String tipoTramite,
+            String subtipo,
+            String pais,
+            String estado,
+            Object monto,
+            String moneda,
+            String creadoEn,
             Map<String, Object> ciudadano,
             Map<String, Object> tarifa,
             Map<String, Object> tramite
     ) {
     }
 }
-

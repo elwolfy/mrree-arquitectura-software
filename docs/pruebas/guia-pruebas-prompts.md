@@ -28,7 +28,8 @@
 | **08-3** | M2: `identidad-service` (Adapter + ACL) y `pide-simulador` | `m2-integracion/identidad-service`, `pide-simulador` | Completado |
 | **08-4** | M2: `notificaciones-service` (Observer distribuido, idempotencia, DLQ) | `m2-integracion/notificaciones-service` | Completado |
 | **08-5** | M2: `pagos-service` (Strategy), `bff-web` (Facade) y `gateway` | `pagos-service`, `bff-web`, `gateway` | Completado |
-| **08-6 a 08-7** | M2: `sidecar` Envoy, contratos DDD y Asignación A2 | `m2-integracion/*`, `docs/ddd/*` | Pendiente |
+| **08-6** | M2: Sidecar Envoy, `grpc-consultar`, contratos AsyncAPI y DDD | `envoy/`, `docs/ddd/*`, `docs/contratos/asyncapi.yaml` | Completado |
+| **08-7** | M2: Verificación integral, frontend M2, andamiaje A2 (`s3`) y `solucion/a2` | `docs/asignaciones/A2*.md`, tag `s3`, rama `solucion/a2` | Completado |
 | **09** | M3: Persistencia, Saga, Outbox, Event Sourcing y CQRS | `m3-datos/*` | Pendiente |
 | **10** | M4: Observabilidad (OpenTelemetry + Grafana LGTM) | `m4-observabilidad/*` | Pendiente |
 | **11–13** | ADRs, C4, soluciones de asignaciones y verificación final | `docs/*` | Pendiente |
@@ -357,6 +358,39 @@ try { Invoke-WebRequest -Uri "http://localhost:8086/api/identidad/validaciones" 
 
 ---
 
+## Prompts 08-6 y 08-7 — M2: Sidecar Envoy, gRPC vs. REST, Verificación Integral y Asignación A2 (`main` y `solucion/a2`)
+
+### 1. En `main` (Etiqueta `s3` — Andamiaje de A2 y Verificación de M2)
+```powershell
+git checkout main
+
+# 1.1 Ejecutar pruebas de todo el módulo M2 (TramiteObservadoConsumerTest aparece como skipped)
+mvn -B -f m2-integracion verify
+
+# 1.2 Levantar todos los contenedores de M2 (incluyendo m2-frontend en http://localhost:4200)
+.\m2-integracion\scripts\levantar.ps1
+
+# 1.3 Iniciar trámite y comparar REST vs. gRPC
+$trm = Invoke-RestMethod -Uri "http://localhost:8080/bff/tramites" -Method POST -ContentType "application/json; charset=utf-8" -Body '{"dni":"40000001","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
+.\m2-integracion\scripts\grpc-consultar.ps1 $trm.id
+
+# 1.4 Observar trámite en main -> pasa a OBSERVADO y deja 1 mensaje esperando en notificaciones.tramite.observado
+Invoke-RestMethod -Uri "http://localhost:8080/api/tramites/$($trm.id)/observacion" -Method PUT -ContentType "application/json; charset=utf-8" -Body '{"motivo":"Copia ilegible en el reverso"}' | ConvertTo-Json
+```
+
+### 2. En `solucion/a2` (Solución de Referencia de A2)
+```powershell
+git checkout solucion/a2
+
+# 2.1 Ejecutar prueba de integración del consumidor TramiteObservadoConsumer (en verde)
+mvn -B -f m2-integracion verify -pl notificaciones-service -Dit.test=TramiteObservadoConsumerTest
+
+# 2.2 Verificar que git diff --stat main...solucion/a2 muestra únicamente los 5 archivos de A2
+git diff --stat main...solucion/a2
+```
+
+---
+
 ## Prompts 08-4 y 08-5 — M2: `notificaciones-service`, `pagos-service`, `bff-web` y `gateway`
 
 ### 1. Pruebas automatizadas de los 7 módulos de M2
@@ -381,4 +415,37 @@ Invoke-RestMethod -Uri "http://localhost:8080/bff/inicio?dni=40000001" | Convert
 
 # 2.4 Detener contenedores al terminar
 .\m2-integracion\scripts\detener.ps1
+```
+
+---
+
+## Prompts 08-6 y 08-7 — M2: Sidecar Envoy, gRPC vs. REST, Verificación Integral y Asignación A2 (`main` y `solucion/a2`)
+
+### 1. En `main` (Etiqueta `s3` — Andamiaje de A2 y Verificación de M2)
+```powershell
+git checkout main
+
+# 1.1 Ejecutar pruebas de todo el módulo M2 (TramiteObservadoConsumerTest aparece como skipped)
+mvn -B -f m2-integracion verify
+
+# 1.2 Levantar todos los contenedores de M2 (incluyendo m2-frontend en http://localhost:4200)
+.\m2-integracion\scripts\levantar.ps1
+
+# 1.3 Iniciar trámite y comparar REST vs. gRPC
+$trm = Invoke-RestMethod -Uri "http://localhost:8080/bff/tramites" -Method POST -ContentType "application/json; charset=utf-8" -Body '{"dni":"40000001","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
+.\m2-integracion\scripts\grpc-consultar.ps1 $trm.id
+
+# 1.4 Observar trámite en main -> pasa a OBSERVADO y deja 1 mensaje esperando en notificaciones.tramite.observado
+Invoke-RestMethod -Uri "http://localhost:8080/api/tramites/$($trm.id)/observacion" -Method PUT -ContentType "application/json; charset=utf-8" -Body '{"motivo":"Copia ilegible en el reverso"}' | ConvertTo-Json
+```
+
+### 2. En `solucion/a2` (Solución de Referencia de A2)
+```powershell
+git checkout solucion/a2
+
+# 2.1 Ejecutar prueba de integración del consumidor TramiteObservadoConsumer (en verde)
+mvn -B -f m2-integracion verify -pl notificaciones-service -Dit.test=TramiteObservadoConsumerTest
+
+# 2.2 Verificar que git diff --stat main...solucion/a2 muestra únicamente los 5 archivos de A2
+git diff --stat main...solucion/a2
 ```

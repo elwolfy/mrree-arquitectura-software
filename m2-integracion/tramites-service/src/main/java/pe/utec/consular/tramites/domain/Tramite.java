@@ -81,6 +81,20 @@ public abstract class Tramite {
     }
 
     /**
+     * Registra una observación sobre el trámite cuando requiere corrección documental por parte del ciudadano
+     * (Asignación A2).
+     */
+    public void observar(String motivo) {
+        if (motivo == null || motivo.isBlank()) {
+            throw new ReglaNegocioException("El motivo de observación no puede ser vacío");
+        }
+        if (this.estado == EstadoTramite.EMITIDO) {
+            throw new ReglaNegocioException("No se puede observar un trámite que ya fue EMITIDO");
+        }
+        this.estado = EstadoTramite.OBSERVADO;
+    }
+
+    /**
      * Nombre concreto del subtipo de dominio ({@code Legalizacion}, {@code Apostilla} o {@code RegistroConsular}).
      */
     public abstract String getSubtipo();

@@ -276,7 +276,7 @@ services:
     mem_limit: 384m
     environment:
       CITAS_SERVICE_URL: http://citas-service:8081
-      TRAMITES_SERVICE_URL: http://tramites-service:8082
+      TRAMITES_SERVICE_URL: ${TRAMITES_GATEWAY_URL:-http://tramites-service:8082}
       PAGOS_SERVICE_URL: http://pagos-service:8083
       NOTIFICACIONES_SERVICE_URL: http://notificaciones-service:8084
       IDENTIDAD_SERVICE_URL: http://identidad-service:8086
@@ -295,6 +295,53 @@ services:
       timeout: 3s
       start_period: 30s
       retries: 5
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: m2-frontend
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      MODULO: m2
+      API_BASE_URL: http://localhost:8080
+      FUNC_CITAS: "true"
+      FUNC_TRAMITES: "true"
+      FUNC_BFF: "true"
+      FUNC_PAGOS: "false"
+      FUNC_HISTORIAL: "false"
+    ports:
+      - "4200:80"
+    networks:
+      - frontal
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/assets/config.json >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  envoy:
+    image: envoyproxy/envoy:v1.31-latest
+    container_name: m2-envoy
+    profiles: ["sidecar"]
+    restart: unless-stopped
+    mem_limit: 256m
+    command: ["-c", "/etc/envoy/envoy.yaml", "--log-level", "info"]
+    ports:
+      - "10000:10000"
+      - "9901:9901"
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      tramites-service:
+        condition: service_healthy
 
 networks:
   frontal:

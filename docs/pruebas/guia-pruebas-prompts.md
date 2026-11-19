@@ -572,3 +572,26 @@ Get-Content -Raw docs/pruebas/sql/consultas-optimizacion.sql | .\m3-datos\script
 # 2.5 Detener y limpiar contenedores al terminar
 .\m3-datos\scripts\limpiar.ps1 -Forzar
 ```
+
+---
+
+## Prompt 09-6 — M3: Verificación Integral, Guía de A3 (`main`, tag `s4`) y Solución de Referencia (`solucion/a3`)
+
+### 1. En `main` (Etiqueta `s4` — Andamiaje de A3 y A4 con pruebas omitidas)
+```powershell
+git checkout main
+
+# 1.1 Ejecutar mvn verify en todo m3-datos (SagaCompensacionTest y RedisCacheConsultaTramiteAdapterTest aparecen como Skipped)
+mvn -B -f m3-datos verify
+```
+
+### 2. En `solucion/a3` (Solución de Referencia de la Asignación A3)
+```powershell
+git checkout solucion/a3
+
+# 2.1 Ejecutar prueba de compensación de la saga (en verde)
+mvn -B -f m3-datos verify -pl tramites-service -Dit.test=SagaCompensacionTest
+
+# 2.2 Verificar que git diff --stat main...solucion/a3 muestra únicamente los 4 archivos de A3
+git diff --stat main...solucion/a3
+```

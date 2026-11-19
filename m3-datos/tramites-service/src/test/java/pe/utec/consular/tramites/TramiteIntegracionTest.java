@@ -44,7 +44,6 @@ import pe.utec.consular.tramites.adapter.out.persistence.SpringDataOutboxReposit
 import pe.utec.consular.tramites.application.port.out.EventoTramiteStorePort;
 import pe.utec.consular.tramites.application.saga.SagaSolicitudTramite;
 import pe.utec.consular.tramites.domain.EmisionCompletada;
-import pe.utec.consular.tramites.domain.EmisionFallida;
 import pe.utec.consular.tramites.domain.EstadoTramite;
 import pe.utec.consular.tramites.domain.PagoConfirmado;
 import pe.utec.consular.tramites.domain.TipoTramite;
@@ -386,9 +385,9 @@ class TramiteIntegracionTest {
     }
 
     @Test
-    @DisplayName("Saga Orquestada: camino feliz avanza hasta EMITIDO y ante emision.fallida en main queda EN_EMISION sin compensar")
-    void sagaCaminoFelizHastaEmitidoYEnMainSinCompensarAnteFalla() {
-        // 1. Camino feliz: PENDIENTE_PAGO -> pago.confirmado (EN_EMISION) -> emision.completada (EMITIDO)
+    @DisplayName("Saga Orquestada: camino feliz avanza hasta EMITIDO de forma idempotente")
+    void sagaCaminoFelizHastaEmitido() {
+        // Camino feliz: PENDIENTE_PAGO -> pago.confirmado (EN_EMISION) -> emision.completada (EMITIDO)
         TramiteDto feliz = registrarViaRest(new RegistrarTramiteRequest(
                 "42000001", "Laura Paredes", "laura@correo.lab",
                 TipoTramite.APOSTILLA, "ES", 2, "ES"
@@ -406,25 +405,14 @@ class TramiteIntegracionTest {
         assertEquals(EstadoTramite.EN_EMISION, enEmision.getBody().estado());
 
         sagaSolicitudTramite.alCompletarEmision(new EmisionCompletada(feliz.id(), "DOC-2026-000099"));
+        // Reentrega idempotente de emision.completada
+        sagaSolicitudTramite.alCompletarEmision(new EmisionCompletada(feliz.id(), "DOC-2026-000099"));
+
         ResponseEntity<TramiteDto> emitido = restTemplate.getForEntity(url("/api/tramites/" + feliz.id()), TramiteDto.class);
         assertEquals(HttpStatus.OK, emitido.getStatusCode());
         assertNotNull(emitido.getBody());
         assertEquals(EstadoTramite.EMITIDO, emitido.getBody().estado());
         assertEquals("DOC-2026-000099", emitido.getBody().numeroDocumento());
-
-        // 2. Falla de emisión en main: el trámite queda en EN_EMISION (la compensación es la Asignación A3)
-        TramiteDto conFalla = registrarViaRest(new RegistrarTramiteRequest(
-                "42000002", "Roberto Silva", "roberto@correo.lab",
-                TipoTramite.LEGALIZACION, "ES", 3, "ES"
-        ));
-        sagaSolicitudTramite.alConfirmarPago(new PagoConfirmado(UUID.randomUUID(), conFalla.id(), conFalla.monto()));
-        sagaSolicitudTramite.alFallarEmision(new EmisionFallida(conFalla.id(), "Falla simulada de firma"));
-
-        ResponseEntity<TramiteDto> trasFalla = restTemplate.getForEntity(url("/api/tramites/" + conFalla.id()), TramiteDto.class);
-        assertEquals(HttpStatus.OK, trasFalla.getStatusCode());
-        assertNotNull(trasFalla.getBody());
-        assertEquals(EstadoTramite.EN_EMISION, trasFalla.getBody().estado(),
-                "En main, ante emision.fallida el trámite debe permanecer en EN_EMISION sin compensar");
     }
 
     private TramiteDto registrarViaRest(RegistrarTramiteRequest request) {

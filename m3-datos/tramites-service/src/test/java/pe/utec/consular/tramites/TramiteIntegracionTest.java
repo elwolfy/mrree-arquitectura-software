@@ -208,10 +208,12 @@ class TramiteIntegracionTest {
         assertNotNull(historial.get(0).fecha());
         assertEquals(apostilla.codigo(), historial.get(0).datos().get("codigo"));
 
-        // 5. Comparar GET /api/tramites/{id} (REST desde vista_tramite) vs ConsultarTramite (gRPC desde vista_tramite)
+        // 5. Comparar GET /api/tramites/{id} (REST desde vista_tramite con X-Cache: MISS) vs ConsultarTramite (gRPC desde vista_tramite)
         ResponseEntity<TramiteDto> respRest = restTemplate.getForEntity(
                 url("/api/tramites/" + apostilla.id()), TramiteDto.class);
         assertEquals(HttpStatus.OK, respRest.getStatusCode());
+        assertEquals("MISS", respRest.getHeaders().getFirst("X-Cache"),
+                "En main (CacheNulaConsultaTramiteAdapter), GET /api/tramites/{id} debe responder con X-Cache: MISS");
         TramiteDto dtoRest = respRest.getBody();
         assertNotNull(dtoRest);
 

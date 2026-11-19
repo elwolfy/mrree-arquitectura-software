@@ -84,14 +84,15 @@ public class TramiteController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Consulta los detalles de un trámite por su identificador UUID leyendo exclusivamente de la vista CQRS")
+    @Operation(summary = "Consulta los detalles de un trámite por su identificador UUID aplicando Cache-Aside (cabecera X-Cache: HIT|MISS)")
     public ResponseEntity<TramiteDto> consultarPorId(
             @Parameter(description = "Identificador único UUID del trámite", required = true)
             @PathVariable UUID id) {
-        return consultarTramiteUseCase.consultarPorId(id)
-                .map(mapper::aDto)
-                .map(ResponseEntity::ok)
+        var resultado = consultarTramiteUseCase.consultarConOrigenCache(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró el trámite en vista_tramite con identificador: " + id));
+        return ResponseEntity.ok()
+                .header("X-Cache", resultado.desdeCache() ? "HIT" : "MISS")
+                .body(mapper.aDto(resultado.vista()));
     }
 
     @GetMapping("/{id}/historial")

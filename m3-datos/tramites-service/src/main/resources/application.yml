@@ -9,6 +9,15 @@ fallas:
   intermitentes:
     porcentaje: ${FALLAS_INTERMITENTES_PORCENTAJE:0}
 
+cache:
+  consulta-tramite:
+    tipo: ${CACHE_CONSULTA_TRAMITE_TIPO:nula}
+    ttl-segundos: ${CACHE_CONSULTA_TRAMITE_TTL_SEGUNDOS:60}
+
+pagos:
+  service:
+    url: ${PAGOS_SERVICE_URL:http://pagos-service:8083}
+
 spring:
   application:
     name: tramites-service
@@ -44,6 +53,13 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:consular}
     password: ${RABBITMQ_PASSWORD:consular}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      repositories:
+        enabled: false
 
 springdoc:
   api-docs:

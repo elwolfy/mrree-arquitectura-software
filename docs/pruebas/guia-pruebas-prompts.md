@@ -543,3 +543,32 @@ Remove-Item Env:EMISION_SIMULAR_FALLA -ErrorAction SilentlyContinue
 # 2.4 Detener y limpiar contenedores al terminar
 .\m3-datos\scripts\limpiar.ps1 -Forzar
 ```
+
+---
+
+## Prompt 09-5 — M3: Material de Optimización (1 000 000 de filas), Andamiaje de Caché (A4) y README
+
+### 1. Compilación y Pruebas (`mvn verify` con `RedisCacheConsultaTramiteAdapterTest` omitida)
+```powershell
+# Verifica que GET /api/tramites/{id} devuelve X-Cache: MISS y que RedisCacheConsultaTramiteAdapterTest está Skipped (@Disabled("Asignación A4"))
+mvn -B -f m3-datos verify
+```
+
+### 2. Carga Masiva (1 000 000 de filas) y `EXPLAIN ANALYZE` en Docker Compose
+```powershell
+# 2.1 Levantar contenedores de M3
+.\m3-datos\scripts\levantar.ps1
+
+# 2.2 Verificar cabecera X-Cache: MISS en GET /api/tramites/{id}
+$t = Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/tramites" -ContentType "application/json" -Body '{"dni":"40000001","nombres":"Ana Perez","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
+(Invoke-WebRequest -Method Get -Uri "http://localhost:8080/api/tramites/$($t.id)" -UseBasicParsing).Headers["X-Cache"]
+
+# 2.3 Cargar 1 000 000 de filas en tramites.vista_tramite (~15-18 s)
+.\m3-datos\scripts\cargar-datos-masivos.ps1
+
+# 2.4 Ejecutar consultas-optimizacion.sql (Seq Scan vs Index Scan y OFFSET 900000 vs Keyset Pagination)
+Get-Content -Raw docs/pruebas/sql/consultas-optimizacion.sql | .\m3-datos\scripts\psql.ps1
+
+# 2.5 Detener y limpiar contenedores al terminar
+.\m3-datos\scripts\limpiar.ps1 -Forzar
+```

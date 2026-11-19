@@ -15,11 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pe.utec.consular.tramites.application.port.in.BuscarTramitesPorPaisUseCase;
+import pe.utec.consular.tramites.application.port.in.ConsultarHistorialTramiteUseCase;
 import pe.utec.consular.tramites.application.port.in.ConsultarTramiteUseCase;
 import pe.utec.consular.tramites.application.port.in.ListarTramitesPorDniUseCase;
 import pe.utec.consular.tramites.application.port.in.RegistrarTramiteCommand;
 import pe.utec.consular.tramites.application.port.in.RegistrarTramiteUseCase;
 import pe.utec.consular.tramites.domain.Tramite;
+import pe.utec.consular.tramites.domain.VistaTramite;
+import pe.utec.consular.tramites.domain.evento.EventoVersionadoTramite;
 import pe.utec.consular.tramites.domain.exception.RecursoNoEncontradoException;
 
 import java.net.URI;
@@ -27,33 +30,37 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Controlador REST para el registro y consulta de trámites consulares (:8082).
+ * Controlador REST para el registro (Event Sourcing + Outbox), consulta (proyección CQRS)
+ * e historial de eventos de trámites consulares (:8082).
  */
 @RestController
 @RequestMapping("/api/tramites")
-@Tag(name = "Trámites", description = "Registro, búsqueda documental JSONB y consulta de trámites consulares (Legalización, Apostilla y Registro Consular)")
+@Tag(name = "Trámites", description = "Registro por Event Sourcing + Outbox, lectura CQRS desde vista_tramite e historial de eventos")
 public class TramiteController {
 
     private final RegistrarTramiteUseCase registrarTramiteUseCase;
     private final ConsultarTramiteUseCase consultarTramiteUseCase;
+    private final ConsultarHistorialTramiteUseCase consultarHistorialTramiteUseCase;
     private final ListarTramitesPorDniUseCase listarTramitesPorDniUseCase;
     private final BuscarTramitesPorPaisUseCase buscarTramitesPorPaisUseCase;
     private final TramiteWebMapper mapper;
 
     public TramiteController(RegistrarTramiteUseCase registrarTramiteUseCase,
                              ConsultarTramiteUseCase consultarTramiteUseCase,
+                             ConsultarHistorialTramiteUseCase consultarHistorialTramiteUseCase,
                              ListarTramitesPorDniUseCase listarTramitesPorDniUseCase,
                              BuscarTramitesPorPaisUseCase buscarTramitesPorPaisUseCase,
                              TramiteWebMapper mapper) {
         this.registrarTramiteUseCase = registrarTramiteUseCase;
         this.consultarTramiteUseCase = consultarTramiteUseCase;
+        this.consultarHistorialTramiteUseCase = consultarHistorialTramiteUseCase;
         this.listarTramitesPorDniUseCase = listarTramitesPorDniUseCase;
         this.buscarTramitesPorPaisUseCase = buscarTramitesPorPaisUseCase;
         this.mapper = mapper;
     }
 
     @PostMapping
-    @Operation(summary = "Registra un nuevo trámite consular utilizando Builder y Factory Method, dejándolo en PENDIENTE_PAGO y guardando su expediente JSONB")
+    @Operation(summary = "Registra un nuevo trámite consular con Event Sourcing, actualiza vista_tramite y encola tramite.registrado en outbox")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Trámite registrado satisfactoriamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
@@ -72,27 +79,36 @@ public class TramiteController {
     public ResponseEntity<List<TramiteDto>> buscarPorPais(
             @Parameter(description = "Código ISO-2 del país de destino en el expediente JSONB (p. ej. ES)", required = true)
             @RequestParam String pais) {
-        List<Tramite> tramites = buscarTramitesPorPaisUseCase.buscarPorPais(pais);
+        List<VistaTramite> tramites = buscarTramitesPorPaisUseCase.buscarPorPais(pais);
         return ResponseEntity.ok(mapper.aListaDto(tramites));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Consulta los detalles de un trámite por su identificador UUID")
+    @Operation(summary = "Consulta los detalles de un trámite por su identificador UUID leyendo exclusivamente de la vista CQRS")
     public ResponseEntity<TramiteDto> consultarPorId(
             @Parameter(description = "Identificador único UUID del trámite", required = true)
             @PathVariable UUID id) {
         return consultarTramiteUseCase.consultarPorId(id)
                 .map(mapper::aDto)
                 .map(ResponseEntity::ok)
-                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró el trámite con identificador: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró el trámite en vista_tramite con identificador: " + id));
+    }
+
+    @GetMapping("/{id}/historial")
+    @Operation(summary = "Devuelve la secuencia ordenada de eventos de dominio (Event Sourcing) del trámite")
+    public ResponseEntity<List<EventoHistorialDto>> consultarHistorial(
+            @Parameter(description = "Identificador único UUID del trámite", required = true)
+            @PathVariable UUID id) {
+        List<EventoVersionadoTramite> historial = consultarHistorialTramiteUseCase.consultarHistorial(id);
+        return ResponseEntity.ok(mapper.aListaHistorialDto(historial));
     }
 
     @GetMapping
-    @Operation(summary = "Lista todos los trámites registrados para un ciudadano por DNI")
+    @Operation(summary = "Lista todos los trámites de un ciudadano por DNI leyendo exclusivamente de la vista CQRS")
     public ResponseEntity<List<TramiteDto>> listarPorDni(
             @Parameter(description = "Número de DNI de 8 dígitos", required = true)
             @RequestParam String dni) {
-        List<Tramite> tramites = listarTramitesPorDniUseCase.listarPorDni(dni);
+        List<VistaTramite> tramites = listarTramitesPorDniUseCase.listarPorDni(dni);
         return ResponseEntity.ok(mapper.aListaDto(tramites));
     }
 }

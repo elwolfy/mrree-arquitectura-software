@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import pe.utec.consular.tramites.domain.exception.ConflictoVersionException;
 import pe.utec.consular.tramites.domain.exception.RecursoNoEncontradoException;
 import pe.utec.consular.tramites.domain.exception.ReglaNegocioException;
 
@@ -65,6 +66,18 @@ public class ManejadorGlobalErrores {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(pd);
     }
 
+    @ExceptionHandler(ConflictoVersionException.class)
+    public ResponseEntity<ProblemDetail> manejarConflictoVersion(ConflictoVersionException ex, HttpServletRequest request) {
+        ProblemDetail pd = crearProblemDetail(
+                HttpStatus.CONFLICT,
+                ex.getTitulo(),
+                ex.getMessage(),
+                ex.getCodigo(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
+    }
+
     @ExceptionHandler(ReglaNegocioException.class)
     public ResponseEntity<ProblemDetail> manejarReglaNegocio(ReglaNegocioException ex, HttpServletRequest request) {
         ProblemDetail pd = crearProblemDetail(
@@ -99,4 +112,3 @@ public class ManejadorGlobalErrores {
         return pd;
     }
 }
-

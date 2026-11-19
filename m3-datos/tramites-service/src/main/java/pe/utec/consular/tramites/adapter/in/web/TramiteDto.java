@@ -8,9 +8,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Representación JSON de un trámite consular expuesto por la API REST.
- * Incluye el {@code subtipo} concreto instanciado por {@code TramiteFactory}
- * ({@code Legalizacion}, {@code Apostilla} o {@code RegistroConsular}).
+ * Representación JSON de un trámite consular expuesto por la API REST a partir de la
+ * proyección de lectura CQRS ({@code tramites.vista_tramite}) o del agregado recién creado.
  */
 public record TramiteDto(
         UUID id,
@@ -26,7 +25,10 @@ public record TramiteDto(
         String idioma,
         EstadoTramite estado,
         BigDecimal monto,
-        Instant creadoEn
+        String motivoRechazo,
+        UUID pagoId,
+        String numeroDocumento,
+        Instant creadoEn,
+        Instant actualizadoEn
 ) {
 }
-

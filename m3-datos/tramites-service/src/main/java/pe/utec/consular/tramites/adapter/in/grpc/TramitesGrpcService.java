@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pe.utec.consular.tramites.application.port.in.ConsultarTramiteUseCase;
-import pe.utec.consular.tramites.domain.Tramite;
+import pe.utec.consular.tramites.domain.VistaTramite;
 import pe.utec.consular.tramites.grpc.v1.ConsultarTramiteRequest;
 import pe.utec.consular.tramites.grpc.v1.TramiteResponse;
 import pe.utec.consular.tramites.grpc.v1.TramitesServiceGrpc;
@@ -16,9 +16,8 @@ import java.util.UUID;
 
 /**
  * Adaptador primario gRPC para la consulta binaria tipada de trámites consulares (:9082).
- * <p>Concepto: Comparación de estilos de comunicación síncrona REST vs. gRPC (sección 2.3).
- * Invoca exactamente el mismo puerto de entrada ({@link ConsultarTramiteUseCase}) que el controlador REST.
- * <p>Sesión: S3.
+ * <p>En M3, al igual que {@code GET /api/tramites/{id}}, lee exclusivamente del modelo
+ * de lectura CQRS ({@code tramites.vista_tramite}) a través de {@link ConsultarTramiteUseCase}.
  */
 @Component
 public class TramitesGrpcService extends TramitesServiceGrpc.TramitesServiceImplBase {
@@ -44,7 +43,7 @@ public class TramitesGrpcService extends TramitesServiceGrpc.TramitesServiceImpl
         }
 
         log.info("Consulta gRPC recibida para trámite {}", id);
-        Optional<Tramite> resultado = consultarTramiteUseCase.consultarPorId(id);
+        Optional<VistaTramite> resultado = consultarTramiteUseCase.consultarPorId(id);
         if (resultado.isEmpty()) {
             responseObserver.onError(Status.NOT_FOUND
                     .withDescription("No se encontró el trámite con identificador: " + id)
@@ -52,25 +51,24 @@ public class TramitesGrpcService extends TramitesServiceGrpc.TramitesServiceImpl
             return;
         }
 
-        Tramite t = resultado.get();
+        VistaTramite v = resultado.get();
         TramiteResponse response = TramiteResponse.newBuilder()
-                .setId(t.getId().toString())
-                .setCodigo(t.getCodigo().valor())
-                .setDni(t.getDni().valor())
-                .setNombres(t.getNombres())
-                .setEmail(t.getEmail().valor())
-                .setTipoTramite(t.getTipoTramite().name())
-                .setSubtipo(t.getSubtipo())
-                .setPais(t.getPais())
-                .setFolios(t.getFolios())
-                .setIdioma(t.getIdioma())
-                .setEstado(t.getEstado().name())
-                .setMonto(t.getMonto().toPlainString())
-                .setCreadoEn(t.getCreadoEn().toString())
+                .setId(v.tramiteId().toString())
+                .setCodigo(v.codigo())
+                .setDni(v.dni())
+                .setNombres(v.nombres())
+                .setEmail(v.email())
+                .setTipoTramite(v.tipoTramite().name())
+                .setSubtipo(v.subtipo())
+                .setPais(v.pais())
+                .setFolios(v.folios())
+                .setIdioma(v.idioma())
+                .setEstado(v.estado().name())
+                .setMonto(v.monto().toPlainString())
+                .setCreadoEn(v.creadoEn().toString())
                 .build();
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 }
-

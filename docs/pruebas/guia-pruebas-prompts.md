@@ -451,3 +451,39 @@ docker exec m3-postgres psql -U pagos_app -d consular -c "SELECT * FROM tramites
 # 2.6 Detener y limpiar contenedores al terminar
 .\m3-datos\scripts\limpiar.ps1 -Forzar
 ```
+
+---
+
+## Prompt 09-2 — M3: Event Sourcing, Proyección CQRS y Outbox Transaccional en `tramites-service`
+
+### 1. Pruebas Unitarias y de Integración (`mvn verify`)
+```powershell
+# Ejecuta TramiteEventSourcingTest (reconstrucción, transición inválida y conflicto de versión)
+# y TramiteIntegracionTest (eventos_tramite, vista_tramite, outbox con RabbitMQ detenido y reconstrucción)
+mvn -B -f m3-datos verify
+```
+
+### 2. Verificación en Docker Compose (`m3-*`) y `psql`
+```powershell
+# 2.1 Levantar contenedores de M3
+.\m3-datos\scripts\levantar.ps1
+
+# 2.2 Verificar que tramites.vista_tramite incluye motivo_rechazo y NO tiene índice por dni
+.\m3-datos\scripts\psql.ps1 -c "\d tramites.vista_tramite"
+
+# 2.3 Registrar un trámite y verificar escritura en eventos_tramite, vista_tramite y outbox (< 1 s)
+$t = Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/tramites" -ContentType "application/json" -Body '{"dni":"40000001","nombres":"Ana Perez","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
+.\m3-datos\scripts\psql.ps1 -c "SELECT id, tramite_id, version, tipo, ocurrido_en FROM tramites.eventos_tramite;"
+.\m3-datos\scripts\psql.ps1 -c "SELECT tramite_id, codigo, dni, tipo_tramite, estado, monto, motivo_rechazo, actualizado_en FROM tramites.vista_tramite;"
+.\m3-datos\scripts\psql.ps1 -c "SELECT id, agregado_id, tipo, creado_en, publicado_en FROM tramites.outbox;"
+
+# 2.4 Consultar historial de eventos (GET /api/tramites/{id}/historial)
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/tramites/$($t.id)/historial" | ConvertTo-Json -Depth 5
+
+# 2.5 Reconstruir la proyección CQRS desde eventos_tramite y verificar que devuelve el mismo estado
+Invoke-RestMethod -Method Post -Uri "http://localhost:8082/admin/proyecciones/vista-tramite/reconstruir" | ConvertTo-Json
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/tramites/$($t.id)" | ConvertTo-Json -Depth 5
+
+# 2.6 Detener y limpiar contenedores al terminar
+.\m3-datos\scripts\limpiar.ps1 -Forzar
+```

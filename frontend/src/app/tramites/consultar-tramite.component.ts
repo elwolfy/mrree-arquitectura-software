@@ -75,6 +75,16 @@ import { TramitesService } from './tramites.service';
           <div>
             <h3 style="margin: 0;">Trámite {{ tramite.codigo }} ({{ tramite.tipoTramite }})</h3>
             <small style="color: var(--text-secondary);">ID: {{ tramite.id }} | DNI: {{ tramite.dni }}</small>
+            @if (tramite.numeroDocumento) {
+              <div style="margin-top: 0.4rem; color: #15803d; font-weight: 600;">
+                Documento emitido: <code>{{ tramite.numeroDocumento }}</code>
+              </div>
+            }
+            @if (tramite.motivoRechazo) {
+              <div style="margin-top: 0.4rem; color: #b91c1c; font-weight: 600;">
+                Motivo de rechazo: {{ tramite.motivoRechazo }}
+              </div>
+            }
           </div>
           <p-tag [value]="tramite.estado" severity="info" />
         </div>

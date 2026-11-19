@@ -510,3 +510,36 @@ mvn -B -f m3-datos verify
 # 2.3 Detener y limpiar contenedores al terminar
 .\m3-datos\scripts\limpiar.ps1 -Forzar
 ```
+
+---
+
+## Prompt 09-4 — M3: Saga Orquestada (`SagaSolicitudTramite`), Andamiaje de A3 y Colección Postman
+
+### 1. Compilación y Pruebas (`mvn verify` con `SagaCompensacionTest` omitida)
+```powershell
+# Ejecuta TramiteIntegracionTest (saga camino feliz hasta EMITIDO y falla sin compensación en main)
+# y verifica que SagaCompensacionTest aparece como Skipped (@Disabled("Asignación A3"))
+mvn -B -f m3-datos verify
+```
+
+### 2. Verificación en Docker Compose (`m3-*`)
+```powershell
+# 2.1 Levantar contenedores de M3
+.\m3-datos\scripts\levantar.ps1
+
+# 2.2 Camino feliz: iniciar trámite -> pagar con Idempotency-Key -> verificar estado EMITIDO y 4 eventos en historial
+$t = Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/tramites" -ContentType "application/json" -Body '{"dni":"40000001","nombres":"Ana Perez","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
+Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/pagos" -ContentType "application/json" -Headers @{"Idempotency-Key"=[guid]::NewGuid().ToString()} -Body (@{tramiteId=$t.id; monto=$t.monto} | ConvertTo-Json)
+Start-Sleep -Seconds 3
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/tramites/$($t.id)" | ConvertTo-Json -Depth 5
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/tramites/$($t.id)/historial" | ConvertTo-Json -Depth 5
+.\m3-datos\scripts\psql.ps1 -c "SELECT * FROM tramites.saga_instancia;"
+
+# 2.3 Falla de emisión en main (EMISION_SIMULAR_FALLA=true): trámite queda EN_EMISION y log muestra "Sin compensación: ver asignación A3"
+$env:EMISION_SIMULAR_FALLA = "true"
+docker compose -f m3-datos/docker-compose.yml up -d emision-service
+Remove-Item Env:EMISION_SIMULAR_FALLA -ErrorAction SilentlyContinue
+
+# 2.4 Detener y limpiar contenedores al terminar
+.\m3-datos\scripts\limpiar.ps1 -Forzar
+```

@@ -1,0 +1,198 @@
+{
+  "info": {
+    "_postman_id": "c7b881a4-33a9-4a51-94d0-6f2a1d84e903",
+    "name": "Módulo 3 (m3-datos) — Saga, Event Sourcing, CQRS, Outbox e Idempotencia",
+    "description": "Colección Postman del Módulo 3: Flujo completo de la Saga (Solicitud -> Pago Idempotente -> Emisión), Reintento con la misma Idempotency-Key, Historial de Eventos (Event Sourcing), Reconstrucción de Vista CQRS y Búsqueda Documental JSONB (@>).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "gatewayUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "tramitesDirectUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "tramiteId",
+      "value": ""
+    },
+    {
+      "key": "pagoId",
+      "value": ""
+    },
+    {
+      "key": "idempotencyKey",
+      "value": "550e8400-e29b-41d4-a716-446655440099"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Iniciar Trámite (POST /api/tramites -> PENDIENTE_PAGO)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 201 Created', function () { pm.response.to.have.status(201); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('tramiteId', json.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dni\": \"40000001\",\n  \"nombres\": \"Ana Pérez\",\n  \"email\": \"ana@correo.lab\",\n  \"tipoTramite\": \"APOSTILLA\",\n  \"pais\": \"ES\",\n  \"folios\": 2,\n  \"idioma\": \"ES\"\n}"
+        },
+        "url": {
+          "raw": "{{gatewayUrl}}/api/tramites",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "tramites"]
+        }
+      }
+    },
+    {
+      "name": "2. Pagar Trámite — Primer Intento (POST /api/pagos con Idempotency-Key)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK', function () { pm.response.to.have.status(200); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('pagoId', json.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{idempotencyKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tramiteId\": \"{{tramiteId}}\",\n  \"monto\": 33.00\n}"
+        },
+        "url": {
+          "raw": "{{gatewayUrl}}/api/pagos",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "pagos"]
+        }
+      }
+    },
+    {
+      "name": "3. Pago Repetido — Misma Idempotency-Key (Idempotencia: devuelve el mismo pago)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK y mismo ID de pago', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('pagoId'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{idempotencyKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tramiteId\": \"{{tramiteId}}\",\n  \"monto\": 33.00\n}"
+        },
+        "url": {
+          "raw": "{{gatewayUrl}}/api/pagos",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "pagos"]
+        }
+      }
+    },
+    {
+      "name": "4. Consultar Estado del Trámite en Vista CQRS (GET /api/tramites/{id} -> EMITIDO)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{gatewayUrl}}/api/tramites/{{tramiteId}}",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "tramites", "{{tramiteId}}"]
+        }
+      }
+    },
+    {
+      "name": "5. Consultar Historial de Eventos — Event Sourcing (GET /api/tramites/{id}/historial)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{gatewayUrl}}/api/tramites/{{tramiteId}}/historial",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "tramites", "{{tramiteId}}", "historial"]
+        }
+      }
+    },
+    {
+      "name": "6. Búsqueda Documental JSONB (@>) por País (GET /api/tramites/buscar?pais=ES)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{gatewayUrl}}/api/tramites/buscar?pais=ES",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["api", "tramites", "buscar"],
+          "query": [
+            {
+              "key": "pais",
+              "value": "ES"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Reconstruir Proyección CQRS desde Eventos (POST /admin/proyecciones/vista-tramite/reconstruir)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{tramitesDirectUrl}}/admin/proyecciones/vista-tramite/reconstruir",
+          "host": ["{{tramitesDirectUrl}}"],
+          "path": ["admin", "proyecciones", "vista-tramite", "reconstruir"]
+        }
+      }
+    }
+  ]
+}
+

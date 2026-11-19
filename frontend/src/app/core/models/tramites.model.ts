@@ -32,6 +32,7 @@ export interface TramiteDto {
   monto?: number;
   moneda?: string;
   numeroDocumento?: string;
+  motivoRechazo?: string;
   creadoEn?: string;
   actualizadoEn?: string;
 }

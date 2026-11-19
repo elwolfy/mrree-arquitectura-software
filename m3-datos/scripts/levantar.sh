@@ -35,7 +35,7 @@ if ! docker compose up -d --build --remove-orphans; then
   exit 1
 fi
 
-CONTENEDORES=("m3-postgres" "m3-redis" "m3-rabbitmq" "m3-mailpit" "m3-pide" "m3-citas" "m3-tramites" "m3-pagos" "m3-notificaciones" "m3-identidad" "m3-bff" "m3-gateway" "m3-frontend")
+CONTENEDORES=("m3-postgres" "m3-redis" "m3-rabbitmq" "m3-mailpit" "m3-pide" "m3-citas" "m3-tramites" "m3-pagos" "m3-emision" "m3-notificaciones" "m3-identidad" "m3-bff" "m3-gateway" "m3-frontend")
 TIEMPO_MAXIMO_SEGUNDOS=120
 INTERVALO_SEGUNDOS=2
 

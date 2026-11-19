@@ -487,3 +487,26 @@ Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/tramites/$($t.id)"
 # 2.6 Detener y limpiar contenedores al terminar
 .\m3-datos\scripts\limpiar.ps1 -Forzar
 ```
+
+---
+
+## Prompt 09-3 — M3: Pagos Idempotentes (`Idempotency-Key` + Outbox), `emision-service` (`:8087`) y Avisos
+
+### 1. Compilación y Pruebas de Integración (`mvn verify`)
+```powershell
+# Ejecuta PagosIntegracionTest (idempotencia, 400 sin Idempotency-Key y anulación),
+# EmisionIntegracionTest (camino feliz, idempotencia y falla simulada) y el resto de módulos de M3
+mvn -B -f m3-datos verify
+```
+
+### 2. Verificación en Docker Compose (`m3-*`) y script `pagar-dos-veces`
+```powershell
+# 2.1 Levantar contenedores de M3 (incluyendo m3-pagos y m3-emision)
+.\m3-datos\scripts\levantar.ps1
+
+# 2.2 Ejecutar demostración de pago repetido con la misma Idempotency-Key (verifica conteo = 1 en pagos.pago)
+.\m3-datos\scripts\pagar-dos-veces.ps1
+
+# 2.3 Detener y limpiar contenedores al terminar
+.\m3-datos\scripts\limpiar.ps1 -Forzar
+```

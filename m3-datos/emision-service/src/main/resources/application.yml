@@ -1,0 +1,63 @@
+server:
+  port: 8087
+  shutdown: graceful
+
+emision:
+  simular-falla: ${EMISION_SIMULAR_FALLA:false}
+  duracion-ms: ${EMISION_DURACION_MS:500}
+
+spring:
+  application:
+    name: emision-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/consular?currentSchema=emision
+    username: ${DB_USERNAME:emision_app}
+    password: ${DB_PASSWORD:emision_pwd}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 2000
+      validation-timeout: 1000
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: emision
+        format_sql: false
+
+  flyway:
+    enabled: true
+    schemas: emision
+    default-schema: emision
+    locations: classpath:db/migration/emision
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:consular}
+    password: ${RABBITMQ_PASSWORD:consular}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [corr=%X{correlationId:-sin-id}] %-5level %logger{36} - %msg%n"
+

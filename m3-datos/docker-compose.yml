@@ -239,17 +239,66 @@ services:
       dockerfile: pagos-service/Dockerfile
     container_name: m3-pagos
     restart: unless-stopped
-    mem_limit: 384m
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${PAGOS_DB_USER:-pagos_app}
+      DB_PASSWORD: ${PAGOS_DB_PASSWORD:-pagos_pwd}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-consular}
+      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-consular}
+      LATENCIA_INYECTADA_MS: ${LATENCIA_INYECTADA_MS:-0}
     ports:
       - "8083:8083"
     networks:
       - frontal
       - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health | grep -q UP || exit 1"]
       interval: 10s
       timeout: 3s
-      start_period: 30s
+      start_period: 40s
+      retries: 5
+
+  emision-service:
+    build:
+      context: .
+      dockerfile: emision-service/Dockerfile
+    container_name: m3-emision
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${EMISION_DB_USER:-emision_app}
+      DB_PASSWORD: ${EMISION_DB_PASSWORD:-emision_pwd}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-consular}
+      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-consular}
+      EMISION_SIMULAR_FALLA: ${EMISION_SIMULAR_FALLA:-false}
+    ports:
+      - "8087:8087"
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8087/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
       retries: 5
 
   bff-web:

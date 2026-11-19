@@ -185,6 +185,17 @@
             </modules>
         </profile>
         <profile>
+            <id>modulo-emision</id>
+            <activation>
+                <file>
+                    <exists>emision-service/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>emision-service</module>
+            </modules>
+        </profile>
+        <profile>
             <id>modulo-bff-web</id>
             <activation>
                 <file>

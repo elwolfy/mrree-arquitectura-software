@@ -2,9 +2,49 @@ server:
   port: 8083
   shutdown: graceful
 
+latencia:
+  inyectada:
+    ms: ${LATENCIA_INYECTADA_MS:0}
+
+outbox:
+  relay:
+    intervalo-ms: ${OUTBOX_RELAY_INTERVALO_MS:500}
+
 spring:
   application:
     name: pagos-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/consular?currentSchema=pagos
+    username: ${DB_USERNAME:pagos_app}
+    password: ${DB_PASSWORD:pagos_pwd}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 2000
+      validation-timeout: 1000
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: pagos
+        format_sql: false
+
+  flyway:
+    enabled: true
+    schemas: pagos
+    default-schema: pagos
+    locations: classpath:db/migration/pagos
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:consular}
+    password: ${RABBITMQ_PASSWORD:consular}
 
 springdoc:
   api-docs:
@@ -26,4 +66,3 @@ management:
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [corr=%X{correlationId:-sin-id}] %-5level %logger{36} - %msg%n"
-

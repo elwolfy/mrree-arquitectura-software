@@ -1,0 +1,84 @@
+server:
+  port: 8082
+  shutdown: graceful
+
+grpc:
+  port: ${GRPC_PORT:9082}
+
+fallas:
+  intermitentes:
+    porcentaje: ${FALLAS_INTERMITENTES_PORCENTAJE:0}
+
+cache:
+  consulta-tramite:
+    tipo: ${CACHE_CONSULTA_TRAMITE_TIPO:nula}
+    ttl-segundos: ${CACHE_CONSULTA_TRAMITE_TTL_SEGUNDOS:60}
+
+pagos:
+  service:
+    url: ${PAGOS_SERVICE_URL:http://pagos-service:8083}
+
+spring:
+  application:
+    name: tramites-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/consular?currentSchema=tramites
+    username: ${DB_USERNAME:tramites_app}
+    password: ${DB_PASSWORD:tramites_pwd}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 2000
+      validation-timeout: 1000
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: tramites
+        format_sql: false
+
+  flyway:
+    enabled: true
+    schemas: tramites
+    default-schema: tramites
+    locations: classpath:db/migration/tramites
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:consular}
+    password: ${RABBITMQ_PASSWORD:consular}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      repositories:
+        enabled: false
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [corr=%X{correlationId:-sin-id}] %-5level %logger{36} - %msg%n"
+

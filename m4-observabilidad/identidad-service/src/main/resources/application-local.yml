@@ -1,0 +1,6 @@
+# Perfil 'local' para ejecución desde Eclipse en modo híbrido (regla 02)
+# Conecta al simulador PIDE (WireMock) expuesto en localhost:8089 por Docker Compose
+
+pide:
+  url: http://localhost:8089
+

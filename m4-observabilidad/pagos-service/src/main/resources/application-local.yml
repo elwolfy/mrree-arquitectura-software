@@ -1,0 +1,11 @@
+# Perfil 'local' para ejecutar pagos-service desde Spring Tools for Eclipse
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/consular?currentSchema=pagos
+    username: pagos_app
+    password: pagos_pwd
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: consular
+    password: consular

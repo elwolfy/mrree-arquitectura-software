@@ -1,0 +1,12 @@
+# Perfil 'local' para ejecutar emision-service desde Spring Tools for Eclipse
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/consular?currentSchema=emision
+    username: emision_app
+    password: emision_pwd
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: consular
+    password: consular
+

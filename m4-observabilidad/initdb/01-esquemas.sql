@@ -1,10 +1,26 @@
 -- ==============================================================================
--- 01-esquemas.sql — Inicialización de esquemas y usuarios para M4 (Observabilidad)
+-- 01-esquemas.sql — Patrón Database-per-Service sobre motor PostgreSQL compartido (M3)
 -- Base de datos: consular
 -- Esquemas: citas, tramites, notificaciones, pagos, identidad, emision
+--
+-- CONCEPTO ARQUITECTÓNICO (Database-per-Service / Aislamiento por Bounded Context):
+-- En una arquitectura de microservicios orientada al dominio (DDD), cada Bounded Context
+-- es dueño exclusivo de sus tablas, proyecciones y eventos. Aunque en este entorno
+-- académico todos los servicios comparten una misma instancia física de PostgreSQL
+-- (base de datos `consular`), se aplica aislamiento estricto a nivel de motor mediante:
+--   1. Un esquema dedicado por microservicio (`citas`, `tramites`, `pagos`, `emision`,
+--      `notificaciones`, `identidad`).
+--   2. Un rol de aplicación exclusivo (`<esquema>_app` / `<esquema>_pwd`) asignado como
+--      propietario (`AUTHORIZATION`) de su respectivo esquema.
+--   3. Revocación explícita de permisos al rol `PUBLIC` (`REVOKE ALL ON SCHEMA ... FROM PUBLIC`)
+--      y concesión única (`GRANT ALL PRIVILEGES`) al usuario propietario del esquema.
+-- De esta forma, si un microservicio intenta consultar o modificar directamente tablas
+-- de otro esquema (p. ej., `pagos_app` haciendo `SELECT * FROM tramites.expediente`),
+-- PostgreSQL rechaza la operación con `ERROR: permission denied for schema tramites`,
+-- forzando que toda integración entre contextos ocurra mediante APIs o eventos.
 -- ==============================================================================
 
--- Creación idempotente de roles de aplicación
+-- Creación idempotente de roles de aplicación por Bounded Context
 DO
 $do$
 BEGIN
@@ -29,62 +45,76 @@ BEGIN
 END
 $do$;
 
+GRANT ALL PRIVILEGES ON DATABASE consular TO citas_app, tramites_app, notificaciones_app, pagos_app, identidad_app, emision_app;
+
 -- ------------------------------------------------------------------------------
--- Esquema: citas
+-- Esquema: citas (propietario: citas_app)
 -- ------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS citas AUTHORIZATION citas_app;
 REVOKE ALL ON SCHEMA citas FROM PUBLIC;
 GRANT ALL PRIVILEGES ON SCHEMA citas TO citas_app;
+GRANT ALL PRIVILEGES ON SCHEMA citas TO postgres;
+ALTER ROLE citas_app SET search_path TO citas;
 ALTER DEFAULT PRIVILEGES FOR ROLE citas_app IN SCHEMA citas GRANT ALL ON TABLES TO citas_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE citas_app IN SCHEMA citas GRANT ALL ON SEQUENCES TO citas_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE citas_app IN SCHEMA citas GRANT ALL ON FUNCTIONS TO citas_app;
 
 -- ------------------------------------------------------------------------------
--- Esquema: tramites
+-- Esquema: tramites (propietario: tramites_app)
 -- ------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS tramites AUTHORIZATION tramites_app;
 REVOKE ALL ON SCHEMA tramites FROM PUBLIC;
 GRANT ALL PRIVILEGES ON SCHEMA tramites TO tramites_app;
+GRANT ALL PRIVILEGES ON SCHEMA tramites TO postgres;
+ALTER ROLE tramites_app SET search_path TO tramites;
 ALTER DEFAULT PRIVILEGES FOR ROLE tramites_app IN SCHEMA tramites GRANT ALL ON TABLES TO tramites_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE tramites_app IN SCHEMA tramites GRANT ALL ON SEQUENCES TO tramites_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE tramites_app IN SCHEMA tramites GRANT ALL ON FUNCTIONS TO tramites_app;
 
 -- ------------------------------------------------------------------------------
--- Esquema: notificaciones
+-- Esquema: notificaciones (propietario: notificaciones_app)
 -- ------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS notificaciones AUTHORIZATION notificaciones_app;
 REVOKE ALL ON SCHEMA notificaciones FROM PUBLIC;
 GRANT ALL PRIVILEGES ON SCHEMA notificaciones TO notificaciones_app;
+GRANT ALL PRIVILEGES ON SCHEMA notificaciones TO postgres;
+ALTER ROLE notificaciones_app SET search_path TO notificaciones;
 ALTER DEFAULT PRIVILEGES FOR ROLE notificaciones_app IN SCHEMA notificaciones GRANT ALL ON TABLES TO notificaciones_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE notificaciones_app IN SCHEMA notificaciones GRANT ALL ON SEQUENCES TO notificaciones_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE notificaciones_app IN SCHEMA notificaciones GRANT ALL ON FUNCTIONS TO notificaciones_app;
 
 -- ------------------------------------------------------------------------------
--- Esquema: pagos
+-- Esquema: pagos (propietario: pagos_app)
 -- ------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS pagos AUTHORIZATION pagos_app;
 REVOKE ALL ON SCHEMA pagos FROM PUBLIC;
 GRANT ALL PRIVILEGES ON SCHEMA pagos TO pagos_app;
+GRANT ALL PRIVILEGES ON SCHEMA pagos TO postgres;
+ALTER ROLE pagos_app SET search_path TO pagos;
 ALTER DEFAULT PRIVILEGES FOR ROLE pagos_app IN SCHEMA pagos GRANT ALL ON TABLES TO pagos_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE pagos_app IN SCHEMA pagos GRANT ALL ON SEQUENCES TO pagos_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE pagos_app IN SCHEMA pagos GRANT ALL ON FUNCTIONS TO pagos_app;
 
 -- ------------------------------------------------------------------------------
--- Esquema: identidad
+-- Esquema: identidad (propietario: identidad_app)
 -- ------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS identidad AUTHORIZATION identidad_app;
 REVOKE ALL ON SCHEMA identidad FROM PUBLIC;
 GRANT ALL PRIVILEGES ON SCHEMA identidad TO identidad_app;
+GRANT ALL PRIVILEGES ON SCHEMA identidad TO postgres;
+ALTER ROLE identidad_app SET search_path TO identidad;
 ALTER DEFAULT PRIVILEGES FOR ROLE identidad_app IN SCHEMA identidad GRANT ALL ON TABLES TO identidad_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE identidad_app IN SCHEMA identidad GRANT ALL ON SEQUENCES TO identidad_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE identidad_app IN SCHEMA identidad GRANT ALL ON FUNCTIONS TO identidad_app;
 
 -- ------------------------------------------------------------------------------
--- Esquema: emision
+-- Esquema: emision (propietario: emision_app)
 -- ------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS emision AUTHORIZATION emision_app;
 REVOKE ALL ON SCHEMA emision FROM PUBLIC;
 GRANT ALL PRIVILEGES ON SCHEMA emision TO emision_app;
+GRANT ALL PRIVILEGES ON SCHEMA emision TO postgres;
+ALTER ROLE emision_app SET search_path TO emision;
 ALTER DEFAULT PRIVILEGES FOR ROLE emision_app IN SCHEMA emision GRANT ALL ON TABLES TO emision_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE emision_app IN SCHEMA emision GRANT ALL ON SEQUENCES TO emision_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE emision_app IN SCHEMA emision GRANT ALL ON FUNCTIONS TO emision_app;

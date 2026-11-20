@@ -1,0 +1,377 @@
+{
+  "users": [
+    {
+      "name": "consular",
+      "password": "consular",
+      "tags": ["administrator"]
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "consular",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "consular.eventos",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "consular.eventos.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "notificaciones.cita.reservada",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "notificaciones.cita.reservada.dlq"
+      }
+    },
+    {
+      "name": "notificaciones.cita.reservada.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notificaciones.tramite.registrado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "notificaciones.tramite.registrado.dlq"
+      }
+    },
+    {
+      "name": "notificaciones.tramite.registrado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notificaciones.pago.confirmado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "notificaciones.pago.confirmado.dlq"
+      }
+    },
+    {
+      "name": "notificaciones.pago.confirmado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notificaciones.pago.anulado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "notificaciones.pago.anulado.dlq"
+      }
+    },
+    {
+      "name": "notificaciones.pago.anulado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notificaciones.emision.completada",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "notificaciones.emision.completada.dlq"
+      }
+    },
+    {
+      "name": "notificaciones.emision.completada.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "tramites.pago.confirmado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "tramites.pago.confirmado.dlq"
+      }
+    },
+    {
+      "name": "tramites.pago.confirmado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "tramites.pago.anulado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "tramites.pago.anulado.dlq"
+      }
+    },
+    {
+      "name": "tramites.pago.anulado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "tramites.emision.completada",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "tramites.emision.completada.dlq"
+      }
+    },
+    {
+      "name": "tramites.emision.completada.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "tramites.emision.fallida",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "tramites.emision.fallida.dlq"
+      }
+    },
+    {
+      "name": "tramites.emision.fallida.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "emision.comandos",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "consular.eventos.dlx",
+        "x-dead-letter-routing-key": "emision.comandos.dlq"
+      }
+    },
+    {
+      "name": "emision.comandos.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "notificaciones.cita.reservada",
+      "destination_type": "queue",
+      "routing_key": "cita.reservada",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "notificaciones.cita.reservada.dlq",
+      "destination_type": "queue",
+      "routing_key": "notificaciones.cita.reservada.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "notificaciones.tramite.registrado",
+      "destination_type": "queue",
+      "routing_key": "tramite.registrado",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "notificaciones.tramite.registrado.dlq",
+      "destination_type": "queue",
+      "routing_key": "notificaciones.tramite.registrado.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "notificaciones.pago.confirmado",
+      "destination_type": "queue",
+      "routing_key": "pago.confirmado",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "notificaciones.pago.confirmado.dlq",
+      "destination_type": "queue",
+      "routing_key": "notificaciones.pago.confirmado.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "notificaciones.pago.anulado",
+      "destination_type": "queue",
+      "routing_key": "pago.anulado",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "notificaciones.pago.anulado.dlq",
+      "destination_type": "queue",
+      "routing_key": "notificaciones.pago.anulado.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "notificaciones.emision.completada",
+      "destination_type": "queue",
+      "routing_key": "emision.completada",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "notificaciones.emision.completada.dlq",
+      "destination_type": "queue",
+      "routing_key": "notificaciones.emision.completada.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "tramites.pago.confirmado",
+      "destination_type": "queue",
+      "routing_key": "pago.confirmado",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "tramites.pago.confirmado.dlq",
+      "destination_type": "queue",
+      "routing_key": "tramites.pago.confirmado.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "tramites.pago.anulado",
+      "destination_type": "queue",
+      "routing_key": "pago.anulado",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "tramites.pago.anulado.dlq",
+      "destination_type": "queue",
+      "routing_key": "tramites.pago.anulado.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "tramites.emision.completada",
+      "destination_type": "queue",
+      "routing_key": "emision.completada",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "tramites.emision.completada.dlq",
+      "destination_type": "queue",
+      "routing_key": "tramites.emision.completada.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "tramites.emision.fallida",
+      "destination_type": "queue",
+      "routing_key": "emision.fallida",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "tramites.emision.fallida.dlq",
+      "destination_type": "queue",
+      "routing_key": "tramites.emision.fallida.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos",
+      "vhost": "/",
+      "destination": "emision.comandos",
+      "destination_type": "queue",
+      "routing_key": "emision.solicitar",
+      "arguments": {}
+    },
+    {
+      "source": "consular.eventos.dlx",
+      "vhost": "/",
+      "destination": "emision.comandos.dlq",
+      "destination_type": "queue",
+      "routing_key": "emision.comandos.dlq",
+      "arguments": {}
+    }
+  ]
+}

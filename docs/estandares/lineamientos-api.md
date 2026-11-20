@@ -2,7 +2,7 @@
 
 - **Versión:** `0.1` (Borrador de trabajo para completar en la Sesión 6)
 - **Marco Normativo:** Alineado con el **Decreto Legislativo N.° 1412** (*Ley de Gobierno Digital*), su Reglamento (D.S. N.° 029-2021-PCM) y los estándares de interoperabilidad de la **Plataforma Nacional de Interoperabilidad del Estado (PIDE)** gestionada por la Secretaría de Gobierno y Transformación Digital (SGTD – PCM).
-- **Validación Automatizada:** Reglas ejecutables en [docs/estandares/.spectral.yaml](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/estandares/.spectral.yaml) mediante el script `m4-observabilidad/scripts/validar-apis.ps1`.
+- **Validación Automatizada:** Reglas ejecutables en [docs/estandares/.spectral.yaml](.spectral.yaml) mediante el script `m4-observabilidad/scripts/validar-apis.ps1`.
 
 ---
 

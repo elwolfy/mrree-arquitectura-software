@@ -13,7 +13,7 @@ Diseñar, implementar, probar, instrumentar y documentar una **nueva funcionalid
 1. **Arquitectura Hexagonal y DDD** verificada con pruebas unitarias, de integración (Testcontainers) y de arquitectura (**ArchUnit**).
 2. **Gobernanza de APIs REST** validada sin errores con **Spectral** (`.\scripts\validar-apis.ps1`).
 3. **Observabilidad de Extremo a Extremo** con al menos **una métrica de negocio nueva** y **una traza distribuida con spans enriquecidos** visibles en **Grafana** (`http://localhost:3000`).
-4. **Documentación Arquitectónica Viva**: un **ADR** nuevo en `docs/adr/` y la actualización correspondiente del **Modelo C4** en [docs/c4/workspace.dsl](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/c4/workspace.dsl).
+4. **Documentación Arquitectónica Viva**: un **ADR** nuevo en `docs/adr/` y la actualización correspondiente del **Modelo C4** en [docs/c4/workspace.dsl](../c4/workspace.dsl).
 
 > **Importante:** Este documento es la guía de especificación y evaluación del Proyecto Final; la rama `main` **no** incluye una implementación resuelta de este proyecto.
 
@@ -46,13 +46,13 @@ En la operación consular real, las solicitudes de trámite registradas que perm
 - El contrato OpenAPI actualizado debe pasar `.\m4-observabilidad\scripts\validar-apis.ps1` con **0 errores** en Spectral.
 
 ### 3.2 Instrumentación y Observabilidad en Grafana
-- **Métrica de negocio (Micrometer):** Registrar al menos una métrica nueva con prefijo `consular_` detrás de un puerto de salida hexagonal (tomando como modelo [MicrometerMetricasTramiteAdapter.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m4-observabilidad/tramites-service/src/main/java/pe/utec/consular/tramites/adapter/out/observability/MicrometerMetricasTramiteAdapter.java)), por ejemplo: `consular_tramites_alertas_vencimiento_total` o un histograma `Timer`.
+- **Métrica de negocio (Micrometer):** Registrar al menos una métrica nueva con prefijo `consular_` detrás de un puerto de salida hexagonal (tomando como modelo [MicrometerMetricasTramiteAdapter.java](../../m4-observabilidad/tramites-service/src/main/java/pe/utec/consular/tramites/adapter/out/observability/MicrometerMetricasTramiteAdapter.java)), por ejemplo: `consular_tramites_alertas_vencimiento_total` o un histograma `Timer`.
 - **Traza distribuida y Span (`@WithSpan`):** Anotar el caso de uso o paso de coordinación con `@WithSpan` y atributos de negocio (`@SpanAttribute`), verificando en **Grafana Explore → Tempo** la traza completa y el salto a los logs JSON en **Loki** (**"Logs for this span"**).
 - **Panel en Grafana:** Agregar un panel que consulte la nueva métrica en PromQL dentro de `m4-observabilidad/grafana/dashboards/flujo-tramite.json` (o `vision-general.json`).
 
 ### 3.3 Documentación (ADR + Modelo C4)
 - **ADR nuevo:** Crear `docs/adr/ADR-007-<titulo-de-su-funcionalidad>.md` con la plantilla del curso (Contexto, Decisión, Alternativas consideradas, Consecuencias y Evidencia).
-- **Modelo C4 actualizado:** Actualizar [docs/c4/workspace.dsl](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/c4/workspace.dsl) (vista de componentes o vista dinámica) reflejando el nuevo componente o flujo, y verificar que valide sin errores con Structurizr CLI y se visualice en `http://localhost:8090` (`.\scripts\levantar-c4.ps1`).
+- **Modelo C4 actualizado:** Actualizar [docs/c4/workspace.dsl](../c4/workspace.dsl) (vista de componentes o vista dinámica) reflejando el nuevo componente o flujo, y verificar que valide sin errores con Structurizr CLI y se visualice en `http://localhost:8090` (`.\scripts\levantar-c4.ps1`).
 
 ---
 
@@ -75,7 +75,7 @@ En la operación consular real, las solicitudes de trámite registradas que perm
    ```bash
    git checkout -b pf-<usuario>
    ```
-2. Verifique que se cumplen todos los puntos de [docs/estandares/checklist-revision-arquitectura.md](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/estandares/checklist-revision-arquitectura.md) y que `mvn -B -f m4-observabilidad verify` pasa en verde.
+2. Verifique que se cumplen todos los puntos de [docs/estandares/checklist-revision-arquitectura.md](../estandares/checklist-revision-arquitectura.md) y que `mvn -B -f m4-observabilidad verify` pasa en verde.
 3. Suba la rama `pf-<usuario>` a su fork antes del inicio de la **Sesión 6**.
 
 ---

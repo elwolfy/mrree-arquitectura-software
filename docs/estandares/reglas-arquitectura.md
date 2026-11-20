@@ -24,26 +24,26 @@ En todos los servicios hexagonales (`monolito-modular`, `citas-service`, `tramit
 
 ### Módulo 1 (`m1-estilos`)
 - **Monolito Modular (Hexagonal + Spring Modulith):**
-  - [m1-estilos/monolito-modular/src/test/java/pe/utec/consular/monolito/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m1-estilos/monolito-modular/src/test/java/pe/utec/consular/monolito/ReglasDeArquitecturaTest.java)
-  - [m1-estilos/monolito-modular/src/test/java/pe/utec/consular/monolito/ModulosTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m1-estilos/monolito-modular/src/test/java/pe/utec/consular/monolito/ModulosTest.java) (`ApplicationModules.of(MonolitoApplication.class).verify()`)
+  - [m1-estilos/monolito-modular/src/test/java/pe/utec/consular/monolito/ReglasDeArquitecturaTest.java](../../m1-estilos/monolito-modular/src/test/java/pe/utec/consular/monolito/ReglasDeArquitecturaTest.java)
+  - [m1-estilos/monolito-modular/src/test/java/pe/utec/consular/monolito/ModulosTest.java](../../m1-estilos/monolito-modular/src/test/java/pe/utec/consular/monolito/ModulosTest.java) (`ApplicationModules.of(MonolitoApplication.class).verify()`)
 - **Comparativa Clean Architecture (`entities <- usecase <- interfaceadapters <- frameworks`):**
-  - [m1-estilos/comparativa-clean/src/test/java/pe/utec/consular/clean/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m1-estilos/comparativa-clean/src/test/java/pe/utec/consular/clean/ReglasDeArquitecturaTest.java)
+  - [m1-estilos/comparativa-clean/src/test/java/pe/utec/consular/clean/ReglasDeArquitecturaTest.java](../../m1-estilos/comparativa-clean/src/test/java/pe/utec/consular/clean/ReglasDeArquitecturaTest.java)
 - **Microservicios M1:**
-  - [m1-estilos/microservicios/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m1-estilos/microservicios/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java)
-  - [m1-estilos/microservicios/notificaciones-service/src/test/java/pe/utec/consular/notificaciones/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m1-estilos/microservicios/notificaciones-service/src/test/java/pe/utec/consular/notificaciones/ReglasDeArquitecturaTest.java)
+  - [m1-estilos/microservicios/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java](../../m1-estilos/microservicios/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java)
+  - [m1-estilos/microservicios/notificaciones-service/src/test/java/pe/utec/consular/notificaciones/ReglasDeArquitecturaTest.java](../../m1-estilos/microservicios/notificaciones-service/src/test/java/pe/utec/consular/notificaciones/ReglasDeArquitecturaTest.java)
 
 ### Módulo 2 (`m2-integracion`)
-- [m2-integracion/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m2-integracion/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java)
-- [m2-integracion/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m2-integracion/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java)
-- [m2-integracion/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m2-integracion/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java)
+- [m2-integracion/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java](../../m2-integracion/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java)
+- [m2-integracion/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java](../../m2-integracion/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java)
+- [m2-integracion/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java](../../m2-integracion/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java)
 
 ### Módulo 3 (`m3-datos`)
-- [m3-datos/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m3-datos/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java)
-- [m3-datos/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m3-datos/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java)
-- [m3-datos/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m3-datos/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java)
+- [m3-datos/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java](../../m3-datos/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java)
+- [m3-datos/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java](../../m3-datos/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java)
+- [m3-datos/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java](../../m3-datos/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java)
 
 ### Módulo 4 (`m4-observabilidad`)
-- [m4-observabilidad/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m4-observabilidad/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java)
-- [m4-observabilidad/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m4-observabilidad/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java)
-- [m4-observabilidad/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/m4-observabilidad/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java)
+- [m4-observabilidad/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java](../../m4-observabilidad/citas-service/src/test/java/pe/utec/consular/citas/ReglasDeArquitecturaTest.java)
+- [m4-observabilidad/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java](../../m4-observabilidad/tramites-service/src/test/java/pe/utec/consular/tramites/ReglasDeArquitecturaTest.java)
+- [m4-observabilidad/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java](../../m4-observabilidad/identidad-service/src/test/java/pe/utec/consular/identidad/ReglasDeArquitecturaTest.java)
 

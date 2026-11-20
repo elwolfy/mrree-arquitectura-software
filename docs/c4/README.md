@@ -1,7 +1,7 @@
 # Modelo C4 de la Plataforma Consular (Structurizr DSL)
 
 > **Sesión 5 — Documentación de Arquitectura como Código (`Architecture as Code`)**
-> Archivo fuente: [workspace.dsl](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/c4/workspace.dsl)
+> Archivo fuente: [workspace.dsl](workspace.dsl)
 
 ---
 

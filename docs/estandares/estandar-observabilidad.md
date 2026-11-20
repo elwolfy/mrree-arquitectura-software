@@ -1,7 +1,7 @@
 # Estándar de Observabilidad — Plataforma Consular (M4)
 
 - **Marco de Referencia:** Pilares de Observabilidad (Logs, Métricas y Trazas) con **OpenTelemetry** (CNCF) y la pila **Grafana LGTM** (Loki, Grafana, Tempo, Mimir/Prometheus).
-- **Documento de SLO asociado:** [docs/observabilidad/slo.md](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/observabilidad/slo.md).
+- **Documento de SLO asociado:** [docs/observabilidad/slo.md](../observabilidad/slo.md).
 
 ---
 
@@ -61,6 +61,6 @@ Todo nuevo flujo de negocio (incluido el Proyecto Final) debe exponer sus indica
 
 ## 4. Objetivos de Nivel de Servicio (SLO)
 
-Todo servicio crítico de cara al ciudadano debe definir su **SLI**, **SLO** y **Presupuesto de Error** siguiendo la especificación de [docs/observabilidad/slo.md](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/observabilidad/slo.md):
+Todo servicio crítico de cara al ciudadano debe definir su **SLI**, **SLO** y **Presupuesto de Error** siguiendo la especificación de [docs/observabilidad/slo.md](../observabilidad/slo.md):
 - **SLO de Referencia de la Plataforma:** El **99,0 %** de las consultas de estado de trámite (`GET /api/tramites/{id}`) deben completarse con una latencia inferior a **500 ms**, monitoreado de forma continua en el tablero aprovisionado **"Plataforma consular – visión general"**.
 

@@ -46,7 +46,7 @@ Medición obtenida con `docker stats --no-stream` con los **15 contenedores por 
 
 ## 3. Experimento de la Sesión 5 — Modelo C4 como Código (`Structurizr DSL`)
 
-Para explorar y editar los 4 diagramas de arquitectura ([docs/c4/workspace.dsl](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/c4/workspace.dsl)) sin levantar toda la plataforma:
+Para explorar y editar los 4 diagramas de arquitectura ([docs/c4/workspace.dsl](../docs/c4/workspace.dsl)) sin levantar toda la plataforma:
 
 ```powershell
 cd m4-observabilidad
@@ -55,7 +55,7 @@ cd m4-observabilidad
 
 1. Abrir `http://localhost:8090` y recorrer las cuatro vistas:
    - **1. Diagrama de Contexto del Sistema (C1)** (`ContextoSistema`)
-   - **2. Diagrama de Contenedores (C2)** (`Contenedores`) — observe que en `main` **Redis no aparece** (es la Tarea 1 de la [Asignación A4](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/asignaciones/A4.md)).
+   - **2. Diagrama de Contenedores (C2)** (`Contenedores`) — observe que en `main` **Redis no aparece** (es la Tarea 1 de la [Asignación A4](../docs/asignaciones/A4.md)).
    - **3. Diagrama de Componentes (C3) — `tramites-service`** (`ComponentesTramites`)
    - **4. Vista Dinámica — Flujo Solicitud → Pago → Emisión** (`FlujoSagaSolicitudPagoEmision`)
 2. Validar el archivo DSL por línea de comandos:
@@ -109,14 +109,14 @@ docker compose -f m4-observabilidad/docker-compose.yml up -d pagos-service
 
 En Grafana (`http://localhost:3000`) → **Dashboards → Plataforma Consular**:
 1. **"Plataforma consular – visión general"** (`vision-general.json`):
-   - Incluye el medidor (**Gauge**) del **SLI / SLO** definido en [docs/observabilidad/slo.md](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/observabilidad/slo.md) (proporción de consultas `GET /api/tramites/{id}` con latencia $< 500\text{ ms}$, objetivo $\ge 99{,}0\%$).
+   - Incluye el medidor (**Gauge**) del **SLI / SLO** definido en [docs/observabilidad/slo.md](../docs/observabilidad/slo.md) (proporción de consultas `GET /api/tramites/{id}` con latencia $< 500\text{ ms}$, objetivo $\ge 99{,}0\%$).
    - Paneles de RPS, latencia `p95` y errores por servicio, además de los contadores de negocio `consular_tramites_registrados_total{tipo}` y `consular_pagos_confirmados_total`.
 2. **"Flujo de trámite"** (`flujo-tramite.json`):
    - Cantidad de trámites por estado en la proyección CQRS (`consular_tramites_por_estado{estado}`) y percentiles `p50 / p95 / p99` del histograma `consular_emision_duracion_seconds`.
 
 ### 4.5 Experimento 4: Validación Automatizada de APIs con Spectral
 
-Valida los contratos OpenAPI de los servicios frente a las reglas de [docs/estandares/.spectral.yaml](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/estandares/.spectral.yaml) (derivadas de [docs/estandares/lineamientos-api.md](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/estandares/lineamientos-api.md)):
+Valida los contratos OpenAPI de los servicios frente a las reglas de [docs/estandares/.spectral.yaml](../docs/estandares/.spectral.yaml) (derivadas de [docs/estandares/lineamientos-api.md](../docs/estandares/lineamientos-api.md)):
 
 ```powershell
 cd m4-observabilidad

@@ -1,6 +1,6 @@
 # Objetivo de Nivel de Servicio (SLO) — Consulta de Estado de Trámite Consular
 
-> **Módulo 4 (Observabilidad y Gobernanza Técnica)** — Referencia: sección 7 del [contrato-global.md](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/especificacion/contrato-global.md).
+> **Módulo 4 (Observabilidad y Gobernanza Técnica)** — Referencia: sección 7 del [contrato-global.md](../especificacion/contrato-global.md).
 
 ---
 

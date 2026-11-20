@@ -1,17 +1,1 @@
-{
-  "openapi": "3.0.1",
-  "info": {
-    "title": "API de Validación de Identidad (ACL PIDE)",
-    "description": "Validación de identidad contra RENIEC mediante Capa Anticorrupción (PIDE simulada)",
-    "version": "1.0.0"
-  },
-  "paths": {
-    "/api/identidad/validaciones": {
-      "post": {
-        "summary": "Valida la identidad y vigencia de un ciudadano peruano por DNI",
-        "responses": { "200": { "description": "OK" } }
-      }
-    }
-  }
-}
-
+{"openapi":"3.1.0","info":{"title":"Plataforma Consular â API de Identidad (M2)","description":"Microservicio con patrÃ³n Adapter y Capa AnticorrupciÃ³n (ACL) hacia RENIEC-PIDE simulada","version":"1.0.0"},"servers":[{"url":"http://localhost:8086","description":"Generated server url"}],"tags":[{"name":"Identidad","description":"ValidaciÃ³n de identidad contra RENIEC mediante Capa AnticorrupciÃ³n (PIDE simulada)"}],"paths":{"/api/identidad/validaciones":{"post":{"tags":["Identidad"],"summary":"Valida la identidad y vigencia de un ciudadano peruano por DNI","operationId":"validarIdentidad","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ValidarIdentidadRequest"}}},"required":true},"responses":{"200":{"description":"Identidad vÃ¡lida y vigente","content":{"*/*":{"schema":{"$ref":"#/components/schemas/CiudadanoDto"}}}},"400":{"description":"Formato de DNI invÃ¡lido","content":{"*/*":{"schema":{"$ref":"#/components/schemas/CiudadanoDto"}}}},"404":{"description":"DNI no encontrado","content":{"*/*":{"schema":{"$ref":"#/components/schemas/CiudadanoDto"}}}},"422":{"description":"Identidad no vigente (fallecido)","content":{"*/*":{"schema":{"$ref":"#/components/schemas/CiudadanoDto"}}}},"503":{"description":"Servicio de identidad no disponible","content":{"*/*":{"schema":{"$ref":"#/components/schemas/CiudadanoDto"}}}}}}}},"components":{"schemas":{"ValidarIdentidadRequest":{"type":"object","description":"Solicitud de validaciÃ³n de identidad ciudadana","properties":{"dni":{"type":"string","description":"NÃºmero de DNI de 8 dÃ­gitos","example":40000001,"pattern":"^\\d{id}$"}},"required":["dni"]},"CiudadanoDto":{"type":"object","properties":{"dni":{"type":"string"},"nombres":{"type":"string"},"apellidos":{"type":"string"},"vigente":{"type":"boolean"}}}}}}

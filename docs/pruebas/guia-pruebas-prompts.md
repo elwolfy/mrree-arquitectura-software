@@ -595,3 +595,88 @@ mvn -B -f m3-datos verify -pl tramites-service -Dit.test=SagaCompensacionTest
 # 2.2 Verificar que git diff --stat main...solucion/a3 muestra únicamente los 4 archivos de A3
 git diff --stat main...solucion/a3
 ```
+
+---
+
+## Prompt 10-1 — M4: Base de `m4-observabilidad`, OpenTelemetry Java Agent y Grafana LGTM
+
+```powershell
+# 1. Compilar y ejecutar pruebas en m4-observabilidad
+mvn -B -f m4-observabilidad verify
+
+# 2. Levantar los 15 contenedores de M4 y verificar memoria <= 6 GB
+.\m4-observabilidad\scripts\levantar.ps1
+docker stats --no-stream
+
+# 3. Iniciar y pagar un trámite para generar traza distribuida en Tempo y logs JSON en Loki
+$t = Invoke-RestMethod -Uri "http://localhost:8080/bff/tramites" -Method Post -ContentType "application/json" -Body '{"dni":"40000001","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
+Invoke-RestMethod -Uri "http://localhost:8080/api/pagos" -Method Post -ContentType "application/json" -Headers @{"Idempotency-Key"=[guid]::NewGuid().ToString()} -Body (@{tramiteId=$t.id; monto=$t.monto} | ConvertTo-Json)
+
+# 4. Limpiar contenedores al terminar
+.\m4-observabilidad\scripts\limpiar.ps1 -Forzar
+```
+
+---
+
+## Prompt 10-2 — M4: Métricas de Negocio, Spans de la Saga (`@WithSpan`), Tableros y SLO
+
+```powershell
+# 1. Levantar M4 y activar 3000 ms de latencia inyectada en pagos-service
+.\m4-observabilidad\scripts\levantar.ps1
+$env:LATENCIA_INYECTADA_MS = "3000"
+docker compose -f m4-observabilidad/docker-compose.yml up -d pagos-service
+
+# 2. Verificar en Grafana (http://localhost:3000, admin/admin) los tableros "Plataforma consular – visión general" y "Flujo de trámite"
+Remove-Item Env:LATENCIA_INYECTADA_MS -ErrorAction SilentlyContinue
+.\m4-observabilidad\scripts\limpiar.ps1 -Forzar
+```
+
+---
+
+## Prompt 10-3 — M4: Modelo C4 (`workspace.dsl`) y Asignación A4 (`main` tag `s5` y `solucion/a4`)
+
+```powershell
+# 1. En main: validar workspace.dsl con Structurizr CLI y levantar m4-structurizr en :8090
+docker run --rm -v "${PWD}/docs/c4:/usr/local/structurizr" structurizr/cli:2025.11.09 validate -workspace /usr/local/structurizr/workspace.dsl
+.\m4-observabilidad\scripts\levantar-c4.ps1
+.\m4-observabilidad\scripts\limpiar.ps1 -Forzar
+
+# 2. En solucion/a4: ejecutar prueba de caché Redis en verde y verificar diff de 6 archivos
+git checkout solucion/a4
+mvn -B -f m3-datos verify -pl tramites-service -Dit.test=RedisCacheConsultaTramiteAdapterTest
+git diff --stat main...solucion/a4
+git checkout main
+```
+
+---
+
+## Prompt 10-4 — M4: Gobernanza Técnica (Spectral), Calidad (SonarQube) y Strangler Fig (`demo/strangler`)
+
+```powershell
+# 1. Validar contratos OpenAPI con Spectral
+.\m4-observabilidad\scripts\validar-apis.ps1
+
+# 2. Ejecutar análisis de calidad en SonarQube (:9000, perfil calidad)
+.\m4-observabilidad\scripts\analizar-calidad.ps1
+.\m4-observabilidad\scripts\limpiar.ps1 -Forzar
+
+# 3. Demostración Strangler Fig en la rama demo/strangler
+git checkout demo/strangler
+docker compose -f m4-observabilidad/docker-compose.yml up -d --build postgres rabbitmq mailpit lgtm citas-service monolito-legado gateway
+curl.exe -s http://localhost:8080/api/sistema/info
+curl.exe -s -H "X-Version: nueva" http://localhost:8080/api/sistema/info
+.\m4-observabilidad\scripts\limpiar.ps1 -Forzar
+git checkout main
+```
+
+---
+
+## Prompt 10-5 — M4: Verificación Integral y Guía del Proyecto Final (`main`, tag `s6`)
+
+```powershell
+# 1. Verificar todas las pruebas y levantar m4-observabilidad
+mvn -B -f m4-observabilidad verify
+.\m4-observabilidad\scripts\levantar.ps1
+docker stats --no-stream
+.\m4-observabilidad\scripts\limpiar.ps1 -Forzar
+```

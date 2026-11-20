@@ -1,109 +1,165 @@
-# Módulo 4 (`m4-observabilidad`) — Observabilidad, Modelo C4 y Gobernanza Técnica
+# Módulo 4 (`m4-observabilidad`) — Observabilidad con OpenTelemetry, Modelo C4 y Gobernanza Técnica
 
-Este módulo es una copia autosuficiente de la plataforma consular que incorpora instrumentación con **OpenTelemetry**, la pila **Grafana LGTM** (Loki + Grafana + Tempo + Mimir/Prometheus), trazabilidad distribuida de extremo a extremo (incluyendo propagación por RabbitMQ y Transactional Outbox) y registros estructurados en **JSON** correlacionados con `trace_id` y `span_id`.
-
----
-
-## 1. Arquitectura de Observabilidad (Sesión 6)
-
-1. **Agente Java de OpenTelemetry (`2.10.0`)**:
-   - Descargado en la etapa de compilación de cada `Dockerfile` en `/otel/opentelemetry-javaagent.jar` y activado con `JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar`.
-   - Exporta trazas, métricas y logs por OTLP gRPC hacia `http://lgtm:4317` (`OTEL_SERVICE_NAME=<servicio>`, `OTEL_RESOURCE_ATTRIBUTES=deployment.environment=laboratorio,service.namespace=consular`).
-2. **Propagación de Contexto W3C (`traceparent`) por HTTP, Outbox y RabbitMQ**:
-   - **Tramos síncronos HTTP**: el agente propaga automáticamente la cabecera `traceparent` entre `gateway` (`:8080`) → `bff-web` (`:8085`) → `identidad-service` (`:8086`), `tramites-service` (`:8082`) y `pagos-service` (`:8083`).
-   - **Puente sobre Transactional Outbox (`tramites.outbox` y `pagos.outbox`)**: como los eventos se persisten primero en PostgreSQL y se publican asíncronamente cada 500 ms por un hilo `@Scheduled` (`RelayOutbox`), `OutboxPersistenceAdapter` captura el `trace_id` y `span_id` activos del MDC en la columna `traceparent` (`00-<trace_id>-<span_id>-01`) y `RelayOutbox` inyecta esa cabecera `traceparent` en las propiedades del mensaje AMQP al publicarlo en RabbitMQ. Así, los consumidores de `tramites-service`, `emision-service` y `notificaciones-service` continúan la misma traza distribuida.
-3. **Logs JSON correlacionados con Trazas (`logback-spring.xml`)**:
-   - Todos los servicios usan `LogstashEncoder` para emitir logs JSON con `@timestamp`, `servicio`, `nivel`, `mensaje`, `trace_id`, `span_id` y `correlationId`.
-   - En **Grafana** (`http://localhost:3000`, `admin` / `admin`), el datasource **Tempo** está preconfigurado con *Trace to Logs* hacia **Loki**, permitiendo saltar desde cualquier span de una traza a sus logs con el botón **"Logs for this span"**.
+Este módulo es la versión integral y autosuficiente de la **Plataforma Digital de Servicios Consulares y de Legalización** utilizada en las **Sesiones 5 y 6**. Incorpora el **Agente Java de OpenTelemetry**, la pila **Grafana LGTM** (`m4-lgtm`: Loki + Grafana + Tempo + Mimir/Prometheus), el **Modelo C4** en Structurizr DSL (`m4-structurizr`), validación de contratos OpenAPI con **Spectral** y análisis de calidad y deuda técnica con **SonarQube Community Build** (`m4-sonarqube`).
 
 ---
 
-## 2. Comandos Rápidos
+## 1. Mapa de Contenedores y Puertos
+
+| Contenedor | Servicio / Rol | Puerto(s) en Host | Perfil Compose |
+| --- | --- | --- | --- |
+| `m4-frontend` | Frontend Ciudadano (Angular + PrimeNG en modo `m4`) | `http://localhost:4200` | Por defecto |
+| `m4-gateway` | API Gateway (Punto único de entrada y Swagger agregado) | `http://localhost:8080` | Por defecto |
+| `m4-bff` | BFF Web (`/bff/inicio` y fachada `/bff/tramites`) | `http://localhost:8085` | Por defecto |
+| `m4-citas` | Microservicio de Citas y Cupos Consulares | `http://localhost:8081` | Por defecto |
+| `m4-tramites` | Microservicio de Trámites (Event Sourcing, CQRS, Saga, Outbox) | `http://localhost:8082` / gRPC `9082` | Por defecto |
+| `m4-pagos` | Microservicio de Tarifas (Strategy) y Pagos Idempotentes | `http://localhost:8083` | Por defecto |
+| `m4-notificaciones` | Microservicio de Avisos (Idempotencia, Retry, DLQ) | `http://localhost:8084` | Por defecto |
+| `m4-identidad` | Microservicio de Identidad (ACL PIDE + Resilience4j) | `http://localhost:8086` | Por defecto |
+| `m4-emision` | Microservicio de Emisión Documental (`DOC-YYYY-NNNNNN`) | `http://localhost:8087` | Por defecto |
+| `m4-pide` | Simulador PIDE / RENIEC (WireMock) | `http://localhost:8089` | Por defecto |
+| `m4-lgtm` | **Grafana LGTM** (`admin` / `admin`) + OTLP Collector | UI `http://localhost:3000` / OTLP `4317`, `4318` | Por defecto |
+| `m4-postgres` | PostgreSQL 16 (Esquemas aislados por servicio) | `localhost:5432` | Por defecto |
+| `m4-rabbitmq` | RabbitMQ 3 Management (`consular` / `consular`) | AMQP `5672` / Web `http://localhost:15672` | Por defecto |
+| `m4-redis` | Redis 7 (Caché e Idempotencia) | `localhost:6379` | Por defecto |
+| `m4-mailpit` | Mailpit (Servidor SMTP y bandeja web de laboratorio) | SMTP `1025` / Web `http://localhost:8025` | Por defecto |
+| `m4-structurizr` | **Structurizr** (Modelo C4 desde `../docs/c4/workspace.dsl`) | `http://localhost:8090` | `c4` (`levantar-c4.ps1`) |
+| `m4-sonarqube` | **SonarQube Community Build** (Análisis de calidad) | `http://localhost:9000` | `calidad` (`analizar-calidad.ps1`) |
+| `m4-envoy` | Envoy Sidecar Proxy para `tramites-service` | Proxy `10000` / Admin `http://localhost:9901` | `sidecar` |
+
+---
+
+## 2. Consumo de Memoria Medido y Tiempos de Construcción
+
+Medición obtenida con `docker stats --no-stream` con los **15 contenedores por defecto** en estado `healthy` (sin el perfil opcional `calidad`):
+
+| Grupo de Contenedores | Memoria Medida (`MEM USAGE`) | Límite Configurado (`LIMIT`) |
+| --- | --- | --- |
+| 8 Microservicios Java con Agente OpenTelemetry (`citas`, `tramites`, `pagos`, `emision`, `notificaciones`, `identidad`, `bff`, `gateway`) | `~2 479 MiB` (`~200–418 MiB` c/u) | `384 MiB` – `512 MiB` c/u |
+| `m4-lgtm` (Grafana + Tempo + Loki + Prometheus + OTel Collector) | `~360 MiB` | `1 024 MiB` |
+| Infraestructura (`m4-postgres`, `m4-rabbitmq`, `m4-redis`, `m4-pide`, `m4-mailpit`, `m4-frontend`) | `~331 MiB` | `128 MiB` – `256 MiB` |
+| **Total del Módulo 4 en ejecución** | **`~3 170 MiB` (`~3.17 GB`)** | **Cumple holgadamente el presupuesto $\le 6\text{ GB}$** |
+
+- **Tiempo de primer `docker compose up -d --build`**: $\approx 3\text{ a } 5\text{ minutos}$ (descarga de imágenes y compilación multi-etapa con caché de BuildKit). Los arranques posteriores toman $\approx 45\text{ segundos}$.
+
+---
+
+## 3. Experimento de la Sesión 5 — Modelo C4 como Código (`Structurizr DSL`)
+
+Para explorar y editar los 4 diagramas de arquitectura ([docs/c4/workspace.dsl](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/c4/workspace.dsl)) sin levantar toda la plataforma:
 
 ```powershell
-# Levantar todos los contenedores de M4 y esperar estado healthy
 cd m4-observabilidad
-.\scripts\levantar.ps1
-
-# Detener contenedores conservando volúmenes
-.\scripts\detener.ps1
-
-# Eliminar contenedores, redes y volúmenes
-.\scripts\limpiar.ps1 -Forzar
+.\scripts\levantar-c4.ps1
 ```
 
+1. Abrir `http://localhost:8090` y recorrer las cuatro vistas:
+   - **1. Diagrama de Contexto del Sistema (C1)** (`ContextoSistema`)
+   - **2. Diagrama de Contenedores (C2)** (`Contenedores`) — observe que en `main` **Redis no aparece** (es la Tarea 1 de la [Asignación A4](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/asignaciones/A4.md)).
+   - **3. Diagrama de Componentes (C3) — `tramites-service`** (`ComponentesTramites`)
+   - **4. Vista Dinámica — Flujo Solicitud → Pago → Emisión** (`FlujoSagaSolicitudPagoEmision`)
+2. Validar el archivo DSL por línea de comandos:
+   ```powershell
+   docker run --rm -v "${PWD}/../docs/c4:/usr/local/structurizr" structurizr/cli:2025.11.09 validate -workspace /usr/local/structurizr/workspace.dsl
+   ```
+
 ---
 
-## 3. Verificación Rápida de Trazas y Logs en Grafana
+## 4. Experimentos de la Sesión 6 — Observabilidad, Gobernanza y Deuda Técnica
 
-1. Levantar el módulo con `.\scripts\levantar.ps1`.
-2. Iniciar un trámite en `http://localhost:4200` (o vía `POST http://localhost:8080/bff/tramites`) y registrar su pago (`POST http://localhost:8080/api/pagos` con `Idempotency-Key`).
-3. Abrir Grafana en `http://localhost:3000` (`admin` / `admin`) → **Explore** → seleccionar datasource **Tempo**:
-   - Buscar trazas de `gateway`, `tramites-service`, `pagos-service`, `emision-service` o `notificaciones-service`.
-   - Abrir la traza del trámite y hacer clic en el icono de logs (**"Logs for this span"**) para inspeccionar en **Loki** las líneas JSON con el mismo `trace_id`.
-
----
-
-## 4. Métricas de Negocio, Tableros, SLO y Latencia Inyectada (Sesión 6)
-
-### 4.1 Métricas de Negocio (Micrometer → Prometheus)
-- `consular_tramites_registrados_total{tipo}` (`tramites-service`): contador de trámites registrados por tipo (`LEGALIZACION`, `APOSTILLA`, `REGISTRO_CONSULAR`).
-- `consular_pagos_confirmados_total` (`pagos-service`): contador de pagos confirmados.
-- `consular_emision_duracion_seconds` (`emision-service`): histograma de duración del proceso de emisión documental.
-- `consular_tramites_por_estado{estado}` (`tramites-service`): gauge en tiempo real de trámites por estado en `tramites.vista_tramite`.
-
-### 4.2 Spans Manuales de la Saga (`@WithSpan`)
-En `SagaSolicitudTramite.java`, cada paso del orquestador (`iniciarSaga`, `alConfirmarPago`, `alCompletarEmision`, `alFallarEmision`) está anotado con `@WithSpan` y registra los atributos `tramite.id` y `saga.paso` (`ESPERANDO_PAGO`, `EMISION_SOLICITADA`, `EMISION_COMPLETADA`, `EMISION_FALLIDA`).
-
-### 4.3 Tableros Aprovisionados y SLO
-Al iniciar Grafana (`http://localhost:3000`, `admin` / `admin`), en la carpeta **Plataforma Consular** aparecen automáticamente:
-1. **"Plataforma consular – visión general"** (`vision-general.json`): panel Gauge del **SLI/SLO** (`GET /api/tramites/{id}` < 500 ms ≥ 99 %, documentado en `docs/observabilidad/slo.md`), RPS, latencia p95 y errores por servicio, trámites registrados por tipo y pagos confirmados.
-2. **"Flujo de trámite"** (`flujo-tramite.json`): trámites por estado (CQRS) y percentiles p50/p95/p99 de duración de emisión.
-
-### 4.4 Experimento de Latencia Inyectada en `pagos-service` (Sin Reconstruir la Imagen)
-El servicio `pagos-service` lee la variable de entorno `LATENCIA_INYECTADA_MS` (propiedad `latencia.inyectada.ms`, por defecto `0`). Para activar o desactivar 3000 ms de latencia en caliente sin reconstruir la imagen Docker:
+### 4.1 Levantar la Plataforma Completa
 
 ```powershell
-# 1. Activar latencia de 3000 ms en pagos-service (recrea solo m4-pagos en ~2 segundos)
+cd m4-observabilidad
+.\scripts\levantar.ps1
+```
+
+### 4.2 Experimento 1: Traza Distribuida de un Trámite y Salto a los Logs JSON ("Logs for this span")
+
+1. En `http://localhost:4200` (o vía Postman / PowerShell), inicie un trámite (`POST /bff/tramites`) y pague la orden (`POST /api/pagos` con `Idempotency-Key`):
+   ```powershell
+   $t = Invoke-RestMethod -Uri "http://localhost:8080/bff/tramites" -Method Post -ContentType "application/json" `
+     -Body '{"dni":"40000001","email":"ana@correo.lab","tipoTramite":"APOSTILLA","pais":"ES","folios":2,"idioma":"ES"}'
+   Invoke-RestMethod -Uri "http://localhost:8080/api/pagos" -Method Post -ContentType "application/json" `
+     -Headers @{ "Idempotency-Key" = [guid]::NewGuid().ToString() } `
+     -Body "{`"tramiteId`":`"$($t.id)`",`"monto`":$($t.monto)}"
+   ```
+2. Abra **Grafana** en `http://localhost:3000` (usuario `admin` / clave `admin`) → menú **Explore** → seleccione el datasource **Tempo**:
+   - Busque por `Service Name = gateway` o por la etiqueta de span `saga.paso` (`ESPERANDO_PAGO`, `EMISION_SOLICITADA`, `EMISION_COMPLETADA`).
+   - Observe cómo la propagación de la cabecera W3C `traceparent` (persistida en `tramites.outbox` y `pagos.outbox` por `OutboxPersistenceAdapter` y reinyectada por `RelayOutbox`) permite seguir los tramos asíncronos a través de RabbitMQ.
+   - Haga clic en **"Logs for this span"** sobre cualquier tramo de `tramites-service` o `pagos-service` para abrir en **Loki** las líneas de log JSON que contienen el mismo `trace_id` y `span_id`.
+
+### 4.3 Experimento 2: Latencia Inyectada en `pagos-service` (Sin Reconstruir la Imagen)
+
+Para simular una degradación de 3 segundos en la pasarela de pagos y observar su impacto en las trazas de Tempo y en el percentil `p95` de Grafana:
+
+```powershell
+# 1. Activar 3000 ms de latencia recreando únicamente el contenedor m4-pagos
 $env:LATENCIA_INYECTADA_MS = "3000"
 docker compose -f m4-observabilidad/docker-compose.yml up -d pagos-service
 
-# 2. Registrar un pago (tardará ~3 segundos; observar el span de pagos-service en Tempo y la curva p95 en Grafana)
+# 2. Registrar un nuevo pago (tardará ~3.3 s) y observar la cascada en Tempo y la curva p95 en Grafana
 
-# 3. Desactivar la latencia inyectada volviendo a 0 ms
+# 3. Restaurar la latencia a 0 ms sin reconstruir la imagen
 Remove-Item Env:LATENCIA_INYECTADA_MS -ErrorAction SilentlyContinue
 docker compose -f m4-observabilidad/docker-compose.yml up -d pagos-service
 ```
 
----
+### 4.4 Experimento 3: Tableros Pre-aprovisionados y Monitoreo del SLO
 
-## 5. Gobernanza Técnica, Validación de APIs y Calidad con SonarQube (Sesión 6)
+En Grafana (`http://localhost:3000`) → **Dashboards → Plataforma Consular**:
+1. **"Plataforma consular – visión general"** (`vision-general.json`):
+   - Incluye el medidor (**Gauge**) del **SLI / SLO** definido en [docs/observabilidad/slo.md](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/observabilidad/slo.md) (proporción de consultas `GET /api/tramites/{id}` con latencia $< 500\text{ ms}$, objetivo $\ge 99{,}0\%$).
+   - Paneles de RPS, latencia `p95` y errores por servicio, además de los contadores de negocio `consular_tramites_registrados_total{tipo}` y `consular_pagos_confirmados_total`.
+2. **"Flujo de trámite"** (`flujo-tramite.json`):
+   - Cantidad de trámites por estado en la proyección CQRS (`consular_tramites_por_estado{estado}`) y percentiles `p50 / p95 / p99` del histograma `consular_emision_duracion_seconds`.
 
-### 5.1 Estándares y Validación Automatizada de APIs con Spectral
-Los lineamientos de arquitectura y gobierno digital se encuentran en [docs/estandares/](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/estandares/):
-- `lineamientos-api.md` (borrador v0.1 alineado con D.L. N.° 1412 y PIDE) y `.spectral.yaml` (`rutas-en-kebab-case`).
-- `estandar-observabilidad.md`, `reglas-arquitectura.md` y `checklist-revision-arquitectura.md`.
+### 4.5 Experimento 4: Validación Automatizada de APIs con Spectral
 
-Para validar todos los contratos OpenAPI con **Spectral** en contenedor:
+Valida los contratos OpenAPI de los servicios frente a las reglas de [docs/estandares/.spectral.yaml](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/estandares/.spectral.yaml) (derivadas de [docs/estandares/lineamientos-api.md](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/estandares/lineamientos-api.md)):
+
 ```powershell
 cd m4-observabilidad
 .\scripts\validar-apis.ps1
 ```
 
-### 5.2 Perfil `calidad` con SonarQube Community Build (`:9000`)
-> **Advertencia de recursos:** El contenedor `m4-sonarqube` (`sonarqube:26.11.0.134175-community`) consume aproximadamente **2 GB de RAM** adicionales. Por ello se encuentra aislado bajo el perfil opcional `calidad` y está pensado para la demostración del docente en la Sesión 6 (puede ejecutarse sin levantar el resto de los microservicios).
+### 4.6 Experimento 5: Análisis de Calidad y Deuda Técnica con SonarQube (`perfil calidad`)
+
+> **Advertencia de memoria:** El contenedor `m4-sonarqube` consume $\approx 2\text{ GB}$ de RAM. Se recomienda ejecutarlo con los demás servicios detenidos o en equipos con $\ge 12\text{ GB}$ de RAM, como parte de la demostración del docente.
 
 ```powershell
 cd m4-observabilidad
 .\scripts\analizar-calidad.ps1
 ```
-Una vez completado el análisis con el scanner de Maven en contenedor, abra:
-- **SonarQube Dashboard:** `http://localhost:9000/dashboard?id=consular-tramites-service`
+- Resultados publicados en: `http://localhost:9000/dashboard?id=consular-tramites-service`
+
+### 4.7 Experimento 6: Demostración del Patrón Strangler Fig (`rama demo/strangler`)
+
+En la rama `demo/strangler`, el API Gateway de M4 enruta por defecto `/api/citas/**`, `/api/oficinas/**` y `/api/sistema/**` al monolito heredado de M1 (`m4-monolito-legado`), y desvía hacia el nuevo microservicio `citas-service` (`m4-citas`) las peticiones que incluyen la cabecera `X-Version: nueva`:
+
+```powershell
+git checkout demo/strangler
+docker compose -f m4-observabilidad/docker-compose.yml up -d --build postgres rabbitmq mailpit lgtm citas-service monolito-legado gateway
+
+# Sin cabecera -> responde MONOLITO_MODULAR
+curl.exe -s http://localhost:8080/api/sistema/info
+
+# Con cabecera X-Version: nueva -> responde MICROSERVICIOS (citas-service)
+curl.exe -s -H "X-Version: nueva" http://localhost:8080/api/sistema/info
+
+.\m4-observabilidad\scripts\limpiar.ps1 -Forzar
+git checkout main
+```
 
 ---
 
-## 6. Ejecución en Modo Híbrido desde Eclipse
+## 5. Ejecución en Modo Híbrido desde Eclipse y Solución de Problemas
 
-Cada microservicio incluye `src/main/resources/application-local.yml` con los hosts apuntando a `localhost`. Para depurar un servicio desde **Spring Tools for Eclipse**:
-1. Levantar la infraestructura con `.\scripts\levantar.ps1` y detener únicamente el contenedor del servicio a depurar (`docker stop m4-tramites`).
-2. En Eclipse: *Run As → Spring Boot App* con el perfil activo `local` (`-Dspring.profiles.active=local`).
+### 5.1 Modo Híbrido desde Spring Tools for Eclipse
+1. Levante la plataforma con `.\scripts\levantar.ps1` y detenga solo el contenedor del servicio que desea ejecutar en su IDE (p. ej. `docker stop m4-tramites`).
+2. En Eclipse: clic derecho sobre el proyecto → **Run As → Spring Boot App** con el perfil activo `local` (`-Dspring.profiles.active=local`).
+
+### 5.2 Solución de Problemas Frecuentes
+- **Conflicto de puertos (`8080`, `8081`, `4200`, `5432`, `5672`)**: `levantar.ps1` detecta automáticamente si hay contenedores activos de `m1-*`, `m2-*` o `m3-*`. Ejecute `.\m3-datos\scripts\limpiar.ps1 -Forzar` antes de iniciar M4.
+- **Trazas o métricas tardan unos segundos en aparecer en Grafana**: el agente OpenTelemetry y Prometheus exportan/raspan lotes cada `5 segundos`; aguarde 5–10 segundos tras ejecutar una operación y pulse **Run query** / **Refresh** en Grafana.
+- **Reiniciar todo el estado de M4 desde cero**: ejecute `.\scripts\limpiar.ps1 -Forzar` para eliminar contenedores, redes y volúmenes.

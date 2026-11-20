@@ -1,17 +1,1 @@
-{
-  "openapi": "3.0.1",
-  "info": {
-    "title": "API de Notificaciones y Avisos",
-    "description": "Consulta de avisos y notificaciones enviadas al ciudadano",
-    "version": "1.0.0"
-  },
-  "paths": {
-    "/api/avisos": {
-      "get": {
-        "summary": "Lista los avisos enviados a un ciudadano por DNI",
-        "responses": { "200": { "description": "OK" } }
-      }
-    }
-  }
-}
-
+{"openapi":"3.1.0","info":{"title":"Plataforma Consular â API de Notificaciones (M2)","description":"Microservicio con consumidores idempotentes en RabbitMQ, reintentos y DLQ","version":"1.0.0"},"servers":[{"url":"http://localhost:8084","description":"Generated server url"}],"tags":[{"name":"Avisos","description":"Consulta de avisos y notificaciones enviadas al ciudadano"}],"paths":{"/api/avisos":{"get":{"tags":["Avisos"],"summary":"Lista los avisos enviados a un ciudadano por DNI","operationId":"listarPorDni","parameters":[{"name":"dni","in":"query","description":"NÃºmero de DNI de 8 dÃ­gitos","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/AvisoDto"}}}}}}}}},"components":{"schemas":{"AvisoDto":{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"dni":{"type":"string"},"destinatario":{"type":"string"},"asunto":{"type":"string"},"cuerpo":{"type":"string"},"canal":{"type":"string"},"estado":{"type":"string"},"creadoEn":{"type":"string","format":"date-time"},"referencia":{"type":"string"}}}}}}

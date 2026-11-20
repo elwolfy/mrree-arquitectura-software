@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.utec.consular.emision.application.port.in.ProcesarSolicitudEmisionCommand;
 import pe.utec.consular.emision.application.port.in.ProcesarSolicitudEmisionUseCase;
 import pe.utec.consular.emision.application.port.out.EmisionPersistencePort;
+import pe.utec.consular.emision.application.port.out.MetricasEmisionPort;
 import pe.utec.consular.emision.application.port.out.PublicadorEventosEmisionPort;
 import pe.utec.consular.emision.domain.EmisionCompletada;
 import pe.utec.consular.emision.domain.EmisionFallida;
@@ -33,15 +34,18 @@ public class ProcesarSolicitudEmisionService implements ProcesarSolicitudEmision
 
     private final EmisionPersistencePort persistencePort;
     private final PublicadorEventosEmisionPort publicadorPort;
+    private final MetricasEmisionPort metricasEmisionPort;
     private volatile boolean simularFalla;
     private final long duracionMs;
 
     public ProcesarSolicitudEmisionService(EmisionPersistencePort persistencePort,
                                            PublicadorEventosEmisionPort publicadorPort,
+                                           MetricasEmisionPort metricasEmisionPort,
                                            @Value("${emision.simular-falla:false}") boolean simularFalla,
                                            @Value("${emision.duracion-ms:500}") long duracionMs) {
         this.persistencePort = persistencePort;
         this.publicadorPort = publicadorPort;
+        this.metricasEmisionPort = metricasEmisionPort;
         this.simularFalla = simularFalla;
         this.duracionMs = duracionMs;
     }
@@ -59,23 +63,28 @@ public class ProcesarSolicitudEmisionService implements ProcesarSolicitudEmision
             return;
         }
 
-        simularGeneracionDocumento();
-        persistencePort.registrarMensajeProcesado(comando.messageId());
+        long inicioNanos = System.nanoTime();
+        try {
+            simularGeneracionDocumento();
+            persistencePort.registrarMensajeProcesado(comando.messageId());
 
-        if (simularFalla) {
-            String motivo = "Falla simulada en el servicio de firma digital consular (EMISION_SIMULAR_FALLA=true)";
-            log.warn("Emisión fallida para trámite {}: {}", comando.tramiteId(), motivo);
-            publicadorPort.publicarEmisionFallida(new EmisionFallida(comando.tramiteId(), motivo));
-            return;
+            if (simularFalla) {
+                String motivo = "Falla simulada en el servicio de firma digital consular (EMISION_SIMULAR_FALLA=true)";
+                log.warn("Emisión fallida para trámite {}: {}", comando.tramiteId(), motivo);
+                publicadorPort.publicarEmisionFallida(new EmisionFallida(comando.tramiteId(), motivo));
+                return;
+            }
+
+            long secuencia = persistencePort.siguienteSecuenciaDocumento();
+            String numeroDocumento = String.format("DOC-%04d-%06d", Year.now().getValue(), secuencia);
+            persistencePort.guardarDocumentoEmitido(comando.tramiteId(), numeroDocumento);
+
+            log.info("Documento consular {} emitido satisfactoriamente para trámite {}",
+                    numeroDocumento, comando.tramiteId());
+            publicadorPort.publicarEmisionCompletada(new EmisionCompletada(comando.tramiteId(), numeroDocumento));
+        } finally {
+            metricasEmisionPort.registrarDuracionEmisionNanos(System.nanoTime() - inicioNanos);
         }
-
-        long secuencia = persistencePort.siguienteSecuenciaDocumento();
-        String numeroDocumento = String.format("DOC-%04d-%06d", Year.now().getValue(), secuencia);
-        persistencePort.guardarDocumentoEmitido(comando.tramiteId(), numeroDocumento);
-
-        log.info("Documento consular {} emitido satisfactoriamente para trámite {}",
-                numeroDocumento, comando.tramiteId());
-        publicadorPort.publicarEmisionCompletada(new EmisionCompletada(comando.tramiteId(), numeroDocumento));
     }
 
     private void simularGeneracionDocumento() {

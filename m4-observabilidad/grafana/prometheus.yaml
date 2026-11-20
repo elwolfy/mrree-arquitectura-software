@@ -1,0 +1,58 @@
+otlp:
+  promote_resource_attributes:
+    - service.instance.id
+    - service.name
+    - service.namespace
+    - service.version
+    - cloud.availability_zone
+    - cloud.region
+    - container.name
+    - deployment.environment.name
+    - k8s.cluster.name
+    - k8s.container.name
+    - k8s.cronjob.name
+    - k8s.daemonset.name
+    - k8s.deployment.name
+    - k8s.job.name
+    - k8s.namespace.name
+    - k8s.pod.name
+    - k8s.replicaset.name
+    - k8s.statefulset.name
+
+storage:
+  tsdb:
+    out_of_order_time_window: 10m
+
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'consular-services'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['gateway:8080']
+        labels:
+          service_name: 'gateway'
+      - targets: ['citas-service:8081']
+        labels:
+          service_name: 'citas-service'
+      - targets: ['tramites-service:8082']
+        labels:
+          service_name: 'tramites-service'
+      - targets: ['pagos-service:8083']
+        labels:
+          service_name: 'pagos-service'
+      - targets: ['notificaciones-service:8084']
+        labels:
+          service_name: 'notificaciones-service'
+      - targets: ['bff-web:8085']
+        labels:
+          service_name: 'bff-web'
+      - targets: ['identidad-service:8086']
+        labels:
+          service_name: 'identidad-service'
+      - targets: ['emision-service:8087']
+        labels:
+          service_name: 'emision-service'
+

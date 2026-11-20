@@ -1,5 +1,8 @@
 package pe.utec.consular.tramites.application.saga;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -84,8 +87,10 @@ public class SagaSolicitudTramite {
     /**
      * Paso 1: Registra el inicio de la saga cuando el trámite queda en {@code PENDIENTE_PAGO}.
      */
+    @WithSpan("saga.iniciar")
     @Transactional
-    public void iniciarSaga(UUID tramiteId) {
+    public void iniciarSaga(@SpanAttribute("tramite.id") UUID tramiteId) {
+        etiquetarSpanSaga(tramiteId, "ESPERANDO_PAGO");
         sagaInstanciaRepositoryPort.guardar(new SagaInstancia(
                 tramiteId,
                 "ESPERANDO_PAGO",
@@ -98,8 +103,10 @@ public class SagaSolicitudTramite {
      * Paso 2: Procesa de manera idempotente el evento {@code pago.confirmado}, transiciona el trámite
      * por {@code PAGADO} hacia {@code EN_EMISION} y envía el comando {@code emision.solicitar} vía Outbox.
      */
+    @WithSpan("saga.confirmar_pago")
     @Transactional
     public void alConfirmarPago(PagoConfirmado evento) {
+        etiquetarSpanSaga(evento.tramiteId(), "EMISION_SOLICITADA");
         List<EventoVersionadoTramite> historial = eventoTramiteStorePort.obtenerEventosPorTramiteId(evento.tramiteId());
         if (historial.isEmpty()) {
             log.warn("Saga recibió pago.confirmado para trámite inexistente {}; ignorando mensaje", evento.tramiteId());
@@ -143,8 +150,10 @@ public class SagaSolicitudTramite {
      * Paso 3a (Camino feliz): Procesa de manera idempotente {@code emision.completada} y culmina
      * el trámite en {@code EMITIDO}.
      */
+    @WithSpan("saga.completar_emision")
     @Transactional
     public void alCompletarEmision(EmisionCompletada evento) {
+        etiquetarSpanSaga(evento.tramiteId(), "EMISION_COMPLETADA");
         List<EventoVersionadoTramite> historial = eventoTramiteStorePort.obtenerEventosPorTramiteId(evento.tramiteId());
         if (historial.isEmpty()) {
             log.warn("Saga recibió emision.completada para trámite inexistente {}; ignorando mensaje", evento.tramiteId());
@@ -184,12 +193,22 @@ public class SagaSolicitudTramite {
     /**
      * Paso 3b (Falla de emisión — Punto de extensión de la Asignación A3).
      */
+    @WithSpan("saga.fallar_emision")
     @Transactional
     public void alFallarEmision(EmisionFallida evento) {
+        etiquetarSpanSaga(evento.tramiteId(), "EMISION_FALLIDA");
         // TODO Asignación A3 – Tarea 2: compensar la saga.
         // 1) Solicitar la anulación del pago (POST /api/pagos/{id}/anulacion, ya implementado en pagos-service).
         // 2) Registrar TramiteRechazado con el motivo recibido (estado RECHAZADO y motivo_rechazo).
         log.warn("Sin compensación: ver asignación A3. Trámite {} queda EN_EMISION", evento.tramiteId());
+    }
+
+    private void etiquetarSpanSaga(UUID tramiteId, String paso) {
+        Span spanActual = Span.current();
+        if (tramiteId != null) {
+            spanActual.setAttribute("tramite.id", tramiteId.toString());
+        }
+        spanActual.setAttribute("saga.paso", paso);
     }
 }
 

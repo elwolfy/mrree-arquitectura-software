@@ -101,6 +101,10 @@ services:
       - "3000:3000"
       - "4317:4317"
       - "4318:4318"
+    volumes:
+      - ./grafana/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
+      - ./grafana/provisioning/dashboards/consular-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/grafana-dashboards.yaml:ro
+      - ./grafana/dashboards:/otel-lgtm/dashboards-consular:ro
     networks:
       - frontal
       - datos

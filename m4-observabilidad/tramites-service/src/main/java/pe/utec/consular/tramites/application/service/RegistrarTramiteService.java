@@ -8,6 +8,7 @@ import pe.utec.consular.tramites.application.port.in.RegistrarTramiteCommand;
 import pe.utec.consular.tramites.application.port.in.RegistrarTramiteUseCase;
 import pe.utec.consular.tramites.application.port.out.EventoTramiteStorePort;
 import pe.utec.consular.tramites.application.port.out.ExpedienteRepositoryPort;
+import pe.utec.consular.tramites.application.port.out.MetricasTramitePort;
 import pe.utec.consular.tramites.application.port.out.OutboxPort;
 import pe.utec.consular.tramites.application.proyeccion.ProyectorVistaTramite;
 import pe.utec.consular.tramites.application.saga.SagaSolicitudTramite;
@@ -35,17 +36,20 @@ public class RegistrarTramiteService implements RegistrarTramiteUseCase {
     private final ExpedienteRepositoryPort expedienteRepositoryPort;
     private final OutboxPort outboxPort;
     private final SagaSolicitudTramite sagaSolicitudTramite;
+    private final MetricasTramitePort metricasTramitePort;
 
     public RegistrarTramiteService(EventoTramiteStorePort eventoTramiteStorePort,
                                    ProyectorVistaTramite proyectorVistaTramite,
                                    ExpedienteRepositoryPort expedienteRepositoryPort,
                                    OutboxPort outboxPort,
-                                   SagaSolicitudTramite sagaSolicitudTramite) {
+                                   SagaSolicitudTramite sagaSolicitudTramite,
+                                   MetricasTramitePort metricasTramitePort) {
         this.eventoTramiteStorePort = eventoTramiteStorePort;
         this.proyectorVistaTramite = proyectorVistaTramite;
         this.expedienteRepositoryPort = expedienteRepositoryPort;
         this.outboxPort = outboxPort;
         this.sagaSolicitudTramite = sagaSolicitudTramite;
+        this.metricasTramitePort = metricasTramitePort;
     }
 
     @Override
@@ -91,6 +95,7 @@ public class RegistrarTramiteService implements RegistrarTramiteUseCase {
                         tramite.getTipoTramite()
                 )
         );
+        metricasTramitePort.incrementarTramitesRegistrados(tramite.getTipoTramite());
 
         log.info("Trámite {} ({}) registrado para DNI {} en estado {} (version={}, saga=ESPERANDO_PAGO)",
                 tramite.getCodigo().valor(),

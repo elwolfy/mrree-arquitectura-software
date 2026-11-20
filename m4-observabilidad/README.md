@@ -44,7 +44,40 @@ cd m4-observabilidad
 
 ---
 
-## 4. Ejecución en Modo Híbrido desde Eclipse
+## 4. Métricas de Negocio, Tableros, SLO y Latencia Inyectada (Sesión 6)
+
+### 4.1 Métricas de Negocio (Micrometer → Prometheus)
+- `consular_tramites_registrados_total{tipo}` (`tramites-service`): contador de trámites registrados por tipo (`LEGALIZACION`, `APOSTILLA`, `REGISTRO_CONSULAR`).
+- `consular_pagos_confirmados_total` (`pagos-service`): contador de pagos confirmados.
+- `consular_emision_duracion_seconds` (`emision-service`): histograma de duración del proceso de emisión documental.
+- `consular_tramites_por_estado{estado}` (`tramites-service`): gauge en tiempo real de trámites por estado en `tramites.vista_tramite`.
+
+### 4.2 Spans Manuales de la Saga (`@WithSpan`)
+En `SagaSolicitudTramite.java`, cada paso del orquestador (`iniciarSaga`, `alConfirmarPago`, `alCompletarEmision`, `alFallarEmision`) está anotado con `@WithSpan` y registra los atributos `tramite.id` y `saga.paso` (`ESPERANDO_PAGO`, `EMISION_SOLICITADA`, `EMISION_COMPLETADA`, `EMISION_FALLIDA`).
+
+### 4.3 Tableros Aprovisionados y SLO
+Al iniciar Grafana (`http://localhost:3000`, `admin` / `admin`), en la carpeta **Plataforma Consular** aparecen automáticamente:
+1. **"Plataforma consular – visión general"** (`vision-general.json`): panel Gauge del **SLI/SLO** (`GET /api/tramites/{id}` < 500 ms ≥ 99 %, documentado en `docs/observabilidad/slo.md`), RPS, latencia p95 y errores por servicio, trámites registrados por tipo y pagos confirmados.
+2. **"Flujo de trámite"** (`flujo-tramite.json`): trámites por estado (CQRS) y percentiles p50/p95/p99 de duración de emisión.
+
+### 4.4 Experimento de Latencia Inyectada en `pagos-service` (Sin Reconstruir la Imagen)
+El servicio `pagos-service` lee la variable de entorno `LATENCIA_INYECTADA_MS` (propiedad `latencia.inyectada.ms`, por defecto `0`). Para activar o desactivar 3000 ms de latencia en caliente sin reconstruir la imagen Docker:
+
+```powershell
+# 1. Activar latencia de 3000 ms en pagos-service (recrea solo m4-pagos en ~2 segundos)
+$env:LATENCIA_INYECTADA_MS = "3000"
+docker compose -f m4-observabilidad/docker-compose.yml up -d pagos-service
+
+# 2. Registrar un pago (tardará ~3 segundos; observar el span de pagos-service en Tempo y la curva p95 en Grafana)
+
+# 3. Desactivar la latencia inyectada volviendo a 0 ms
+Remove-Item Env:LATENCIA_INYECTADA_MS -ErrorAction SilentlyContinue
+docker compose -f m4-observabilidad/docker-compose.yml up -d pagos-service
+```
+
+---
+
+## 5. Ejecución en Modo Híbrido desde Eclipse
 
 Cada microservicio incluye `src/main/resources/application-local.yml` con los hosts apuntando a `localhost`. Para depurar un servicio desde **Spring Tools for Eclipse**:
 1. Levantar la infraestructura con `.\scripts\levantar.ps1` y detener únicamente el contenedor del servicio a depurar (`docker stop m4-tramites`).

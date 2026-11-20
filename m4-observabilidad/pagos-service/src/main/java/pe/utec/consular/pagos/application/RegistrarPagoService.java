@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.utec.consular.pagos.application.port.in.RegistrarPagoCommand;
 import pe.utec.consular.pagos.application.port.in.RegistrarPagoUseCase;
+import pe.utec.consular.pagos.application.port.out.MetricasPagoPort;
 import pe.utec.consular.pagos.application.port.out.OutboxPort;
 import pe.utec.consular.pagos.application.port.out.PagoRepositoryPort;
 import pe.utec.consular.pagos.domain.OrdenDePago;
@@ -46,13 +47,16 @@ public class RegistrarPagoService implements RegistrarPagoUseCase {
 
     private final PagoRepositoryPort pagoRepositoryPort;
     private final OutboxPort outboxPort;
+    private final MetricasPagoPort metricasPagoPort;
     private final long latenciaInyectadaMs;
 
     public RegistrarPagoService(PagoRepositoryPort pagoRepositoryPort,
                                 OutboxPort outboxPort,
+                                MetricasPagoPort metricasPagoPort,
                                 @Value("${latencia.inyectada.ms:0}") long latenciaInyectadaMs) {
         this.pagoRepositoryPort = pagoRepositoryPort;
         this.outboxPort = outboxPort;
+        this.metricasPagoPort = metricasPagoPort;
         this.latenciaInyectadaMs = latenciaInyectadaMs;
     }
 
@@ -84,6 +88,7 @@ public class RegistrarPagoService implements RegistrarPagoUseCase {
                 ROUTING_KEY_PAGO_CONFIRMADO,
                 new PagoConfirmado(guardada.getId(), guardada.getTramiteId(), guardada.getMonto())
         );
+        metricasPagoPort.incrementarPagosConfirmados();
 
         log.info("Pago {} confirmado para trámite {} por monto {} PEN (Idempotency-Key={}, outbox=pendiente)",
                 guardada.getId(), guardada.getTramiteId(), guardada.getMonto(), clave);

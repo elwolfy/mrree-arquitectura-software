@@ -484,6 +484,25 @@ services:
       tramites-service:
         condition: service_healthy
 
+  structurizr:
+    image: structurizr/lite:2025.11.08
+    container_name: m4-structurizr
+    profiles: ["c4"]
+    restart: unless-stopped
+    mem_limit: 384m
+    ports:
+      - "8090:8080"
+    volumes:
+      - ../docs/c4:/usr/local/structurizr
+    networks:
+      - frontal
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080 >/dev/null || wget -qO- http://localhost:8080 >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      start_period: 15s
+      retries: 10
+
 networks:
   frontal:
     name: m4_frontal

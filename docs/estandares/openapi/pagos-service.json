@@ -1,0 +1,39 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API de Tarifas y Pagos Consulares",
+    "description": "Cálculo de tarifas (Strategy), pagos idempotentes con Idempotency-Key y Transactional Outbox",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/tarifas": {
+      "get": {
+        "summary": "Calcula la tarifa aplicable según el tipo de trámite y el país destino",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/pagos": {
+      "get": {
+        "summary": "Lista los pagos asociados a un trámite consular",
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "summary": "Registra un pago de manera idempotente exigiendo la cabecera Idempotency-Key y publica pago.confirmado vía Outbox",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/pagos/{id}": {
+      "get": {
+        "summary": "Consulta un pago por su identificador UUID",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/pagos/{id}/anulacion": {
+      "post": {
+        "summary": "Anula un pago confirmado y publica pago.anulado vía Outbox (Andamiaje de la Asignación A3)",
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  }
+}
+

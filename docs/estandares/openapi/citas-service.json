@@ -1,0 +1,49 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API de Citas Consulares",
+    "description": "Gestión de oficinas consulares, disponibilidad de cupos y reserva de citas",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/oficinas": {
+      "get": {
+        "summary": "Lista todas las oficinas consulares activas",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/oficinas/{id}/disponibilidad": {
+      "get": {
+        "summary": "Consulta la disponibilidad de cupos para una oficina y fecha específica",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/citas": {
+      "get": {
+        "summary": "Lista todas las citas registradas para un ciudadano por DNI",
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "summary": "Reserva una nueva cita consular y publica el evento cita.reservada en RabbitMQ",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/citas/{id}": {
+      "get": {
+        "summary": "Consulta los detalles de una cita por su identificador",
+        "responses": { "200": { "description": "OK" } }
+      },
+      "delete": {
+        "summary": "Cancela una cita activa y libera el cupo",
+        "responses": { "204": { "description": "No Content" } }
+      }
+    },
+    "/api/sistema/info": {
+      "get": {
+        "summary": "Obtiene los metadatos de la variante arquitectónica activa",
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  }
+}
+

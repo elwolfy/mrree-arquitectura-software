@@ -1,0 +1,17 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API de Notificaciones y Avisos",
+    "description": "Consulta de avisos y notificaciones enviadas al ciudadano",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/avisos": {
+      "get": {
+        "summary": "Lista los avisos enviados a un ciudadano por DNI",
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  }
+}
+

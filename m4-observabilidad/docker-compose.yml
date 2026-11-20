@@ -503,6 +503,27 @@ services:
       start_period: 15s
       retries: 10
 
+  sonarqube:
+    image: sonarqube:26.11.0.134175-community
+    container_name: m4-sonarqube
+    profiles: ["calidad"]
+    restart: unless-stopped
+    mem_limit: 2048m
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+      SONAR_FORCEAUTHENTICATION: "false"
+    ports:
+      - "9000:9000"
+    networks:
+      - frontal
+      - datos
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 18
+
 networks:
   frontal:
     name: m4_frontal

@@ -77,7 +77,32 @@ docker compose -f m4-observabilidad/docker-compose.yml up -d pagos-service
 
 ---
 
-## 5. Ejecución en Modo Híbrido desde Eclipse
+## 5. Gobernanza Técnica, Validación de APIs y Calidad con SonarQube (Sesión 6)
+
+### 5.1 Estándares y Validación Automatizada de APIs con Spectral
+Los lineamientos de arquitectura y gobierno digital se encuentran en [docs/estandares/](file:///c:/Jorge-Projects/mre_arquitectura/mrree-arquitectura-software/docs/estandares/):
+- `lineamientos-api.md` (borrador v0.1 alineado con D.L. N.° 1412 y PIDE) y `.spectral.yaml` (`rutas-en-kebab-case`).
+- `estandar-observabilidad.md`, `reglas-arquitectura.md` y `checklist-revision-arquitectura.md`.
+
+Para validar todos los contratos OpenAPI con **Spectral** en contenedor:
+```powershell
+cd m4-observabilidad
+.\scripts\validar-apis.ps1
+```
+
+### 5.2 Perfil `calidad` con SonarQube Community Build (`:9000`)
+> **Advertencia de recursos:** El contenedor `m4-sonarqube` (`sonarqube:26.11.0.134175-community`) consume aproximadamente **2 GB de RAM** adicionales. Por ello se encuentra aislado bajo el perfil opcional `calidad` y está pensado para la demostración del docente en la Sesión 6 (puede ejecutarse sin levantar el resto de los microservicios).
+
+```powershell
+cd m4-observabilidad
+.\scripts\analizar-calidad.ps1
+```
+Una vez completado el análisis con el scanner de Maven en contenedor, abra:
+- **SonarQube Dashboard:** `http://localhost:9000/dashboard?id=consular-tramites-service`
+
+---
+
+## 6. Ejecución en Modo Híbrido desde Eclipse
 
 Cada microservicio incluye `src/main/resources/application-local.yml` con los hosts apuntando a `localhost`. Para depurar un servicio desde **Spring Tools for Eclipse**:
 1. Levantar la infraestructura con `.\scripts\levantar.ps1` y detener únicamente el contenedor del servicio a depurar (`docker stop m4-tramites`).

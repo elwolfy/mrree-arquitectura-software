@@ -1,0 +1,51 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API de Trámites Consulares",
+    "description": "Registro por Event Sourcing + Outbox, lectura CQRS desde vista_tramite e historial de eventos",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/tramites": {
+      "get": {
+        "summary": "Lista todos los trámites de un ciudadano por DNI leyendo exclusivamente de la vista CQRS",
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "summary": "Registra un nuevo trámite consular con Event Sourcing, actualiza vista_tramite y encola tramite.registrado en outbox",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/tramites/buscar": {
+      "get": {
+        "summary": "Busca trámites por país de destino utilizando el operador JSONB @> sobre tramites.expediente.metadatos",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tramites/{id}": {
+      "get": {
+        "summary": "Consulta los detalles de un trámite por su identificador UUID aplicando Cache-Aside (cabecera X-Cache: HIT|MISS)",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tramites/{id}/historial": {
+      "get": {
+        "summary": "Devuelve la secuencia ordenada de eventos de dominio (Event Sourcing) del trámite",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/admin/proyecciones/vista-tramite/reconstruir": {
+      "post": {
+        "summary": "Borra tramites.vista_tramite y la reconstruye íntegramente desde tramites.eventos_tramite",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/tramites/proyecciones/vista-tramite/reconstruir": {
+      "post": {
+        "summary": "Borra tramites.vista_tramite y la reconstruye íntegramente desde tramites.eventos_tramite",
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  }
+}
+

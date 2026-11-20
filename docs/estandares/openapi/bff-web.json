@@ -1,0 +1,23 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API BFF Web Ciudadano",
+    "description": "Endpoints orientados a la interfaz ciudadana: inicio agregado y fachada de trámites",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/bff/inicio": {
+      "get": {
+        "summary": "Agrega en paralelo citas, trámites y avisos del ciudadano con degradación elegante",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/bff/tramites": {
+      "post": {
+        "summary": "Fachada 'Iniciar trámite': valida identidad + calcula tarifa + registra trámite",
+        "responses": { "201": { "description": "Created" } }
+      }
+    }
+  }
+}
+

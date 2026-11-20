@@ -1,0 +1,33 @@
+extends: [[spectral:oas, off]]
+
+rules:
+  rutas-en-kebab-case:
+    description: "Todas las rutas de la API deben usar sustantivos en minúsculas y kebab-case: ^(/[a-z0-9-{}]+)+$"
+    message: "La ruta '{{path}}' incumple el lineamiento de kebab-case (^(/[a-z0-9-{}]+)+$). No use camelCase, mayúsculas ni guiones bajos."
+    severity: error
+    given: "$.paths[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^(/[a-z0-9-{}]+)+$"
+
+  info-titulo-obligatorio:
+    description: "El contrato OpenAPI debe declarar título y versión en el bloque info."
+    message: "El bloque 'info' del contrato OpenAPI debe incluir 'title' y 'version'."
+    severity: error
+    given: "$.info"
+    then:
+      - field: title
+        function: truthy
+      - field: version
+        function: truthy
+
+  operacion-resumen-obligatorio:
+    description: "Toda operación HTTP debe incluir un resumen descriptivo (summary) en español."
+    message: "La operación '{{path}}' debe definir la propiedad 'summary'."
+    severity: warn
+    given: "$.paths[*][get,post,put,delete,patch]"
+    then:
+      field: summary
+      function: truthy
+

@@ -14,10 +14,19 @@ spring:
     gateway:
       mvc:
         routes:
-          - id: citas-route
+          # Patrón Strangler Fig (Sesión 6 — Rama demo/strangler):
+          # 1) Si el cliente envía la cabecera 'X-Version: nueva', enruta al microservicio extraído citas-service (:8081)
+          - id: citas-strangler-nueva-route
             uri: ${CITAS_SERVICE_URL:http://citas-service:8081}
             predicates:
-              - Path=/api/citas/**, /api/oficinas/**
+              - Path=/api/citas/**, /api/oficinas/**, /api/sistema/**
+              - Header=X-Version, nueva
+
+          # 2) Por defecto (sin cabecera X-Version: nueva), enruta al monolito heredado de M1 (monolito-legado:8081)
+          - id: citas-strangler-legado-route
+            uri: ${MONOLITO_LEGADO_URL:http://monolito-legado:8081}
+            predicates:
+              - Path=/api/citas/**, /api/oficinas/**, /api/sistema/**
 
           - id: tramites-route
             uri: ${TRAMITES_SERVICE_URL:http://tramites-service:8082}

@@ -151,6 +151,28 @@ curl.exe -s -H "X-Version: nueva" http://localhost:8080/api/sistema/info
 git checkout main
 ```
 
+### 5.3 Demostración del Patrón Strangler Fig con el API Gateway (`demo/strangler`)
+En esta rama (`demo/strangler`), la plataforma ilustra la migración gradual desde el **Monolito Modular de M1** (`m4-monolito-legado`, empaquetado como contenedor adicional desde `../m1-estilos/monolito-modular`) hacia el microservicio extraído **`citas-service`** (`m4-citas`) utilizando una fachada de intercepción en el **API Gateway** (`m4-gateway`, `:8080`):
+
+1. **Tráfico por defecto (sin cabecera `X-Version`):** El Gateway enruta `/api/citas/**`, `/api/oficinas/**` y `/api/sistema/**` hacia `http://monolito-legado:8081` (`variante: "MONOLITO_MODULAR"`).
+2. **Tráfico canario / nueva versión (`X-Version: nueva`):** El predicado `Header=X-Version, nueva` enruta la petición hacia `http://citas-service:8081` (`variante: "MICROSERVICIOS"`).
+
+#### Comandos para verificar la demostración Strangler Fig
+
+```powershell
+# 1. Levantar los contenedores involucrados en la demostración
+docker compose -f m4-observabilidad/docker-compose.yml up -d --build postgres rabbitmq mailpit lgtm citas-service monolito-legado gateway
+
+# 2. Petición sin cabecera -> responde desde el Monolito Heredado (MONOLITO_MODULAR)
+curl.exe -s http://localhost:8080/api/sistema/info
+
+# 3. Petición con cabecera X-Version: nueva -> responde desde citas-service (MICROSERVICIOS)
+curl.exe -s -H "X-Version: nueva" http://localhost:8080/api/sistema/info
+
+# 4. Limpiar contenedores al finalizar
+.\m4-observabilidad\scripts\limpiar.ps1 -Forzar
+```
+
 ---
 
 ## 5. Ejecución en Modo Híbrido desde Eclipse y Solución de Problemas

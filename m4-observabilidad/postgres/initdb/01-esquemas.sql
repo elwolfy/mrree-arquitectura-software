@@ -118,3 +118,6 @@ ALTER ROLE emision_app SET search_path TO emision;
 ALTER DEFAULT PRIVILEGES FOR ROLE emision_app IN SCHEMA emision GRANT ALL ON TABLES TO emision_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE emision_app IN SCHEMA emision GRANT ALL ON SEQUENCES TO emision_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE emision_app IN SCHEMA emision GRANT ALL ON FUNCTIONS TO emision_app;
+
+-- Base de datos aislada para la demostración del Monolito Heredado (Strangler Fig - S6)
+CREATE DATABASE consular_legado;

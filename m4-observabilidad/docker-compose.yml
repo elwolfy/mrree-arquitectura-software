@@ -152,6 +152,34 @@ services:
       start_period: 45s
       retries: 8
 
+  monolito-legado:
+    build:
+      context: ../m1-estilos
+      dockerfile: monolito-modular/Dockerfile
+    container_name: m4-monolito-legado
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/consular_legado?currentSchema=citas,tramites,notificaciones&connectTimeout=2&socketTimeout=2
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      CONSISTENCIA_MODO: CP
+      NOTIFICACIONES_CANAL: CONSOLA
+    networks:
+      - frontal
+      - datos
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 45s
+      retries: 8
+
   tramites-service:
     build:
       context: .
@@ -415,6 +443,7 @@ services:
       <<: *otel-common
       OTEL_SERVICE_NAME: gateway
       CITAS_SERVICE_URL: http://citas-service:8081
+      MONOLITO_LEGADO_URL: http://monolito-legado:8081
       TRAMITES_SERVICE_URL: ${TRAMITES_GATEWAY_URL:-http://tramites-service:8082}
       PAGOS_SERVICE_URL: http://pagos-service:8083
       NOTIFICACIONES_SERVICE_URL: http://notificaciones-service:8084
@@ -426,7 +455,7 @@ services:
       - frontal
       - datos
     depends_on:
-      bff-web:
+      monolito-legado:
         condition: service_healthy
       lgtm:
         condition: service_healthy

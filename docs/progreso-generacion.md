@@ -17,4 +17,50 @@ Registro automatizado del orquestador de generación por prompt.
 | `prompts/10-5-m4-verificacion-y-proyecto-final.md` | completado | `76af084` (`main`, tag `s6`) | 2026-11-20 | Verificación integral `/verificar-modulo m4-observabilidad` (15 contenedores `healthy`, memoria ~3.17–3.72 GB ≤ 6 GB, 16 rutas verificadas, Spectral 0 errores sobre `/v3/api-docs` en vivo), `m4-observabilidad/README.md` completo, guía `docs/asignaciones/proyecto-final.md` y etiqueta `s6`. |
 | `prompts/11-docs-adr-c4-guias.md` | completado | `aec1f7d` | 2026-11-20 | Revisión de coherencia de ADR, C4 (`structurizr/cli validate` 0 errores, Structurizr Lite `:8090` con 4 vistas), estándares y guías existentes; creación de `docs/adr/README.md`, guías de instalación (`docs/instalacion/01..05`, `solucion-de-problemas.md`), `docs/glosario.md` y `README.md` raíz; validación offline de enlaces con `lycheeverse/lychee` (`172 Total, 0 Errors`). |
 | `prompts/12-soluciones-asignaciones.md` | completado | `6085180` (`solucion/a1`), `9d08d66` (`solucion/a2`), `d0d93c6` (`solucion/a3`), `751ba65` (`solucion/a4`) | 2026-11-20 | Rebase limpio de las 4 ramas `solucion/a1` a `solucion/a4` sobre `main`; verificado `git diff --stat main...solucion/aN` limitado exclusivamente al alcance de cada asignación (4, 5, 4 y 6 archivos respectivamente) y pruebas `ReglaDeReprogramacionTest`, `TramiteObservadoConsumerTest`, `SagaCompensacionTest` y `RedisCacheConsultaTramiteAdapterTest` en verde. |
-| `prompts/13-verificacion-final-y-publicacion.md` | en curso | — | 2026-11-20 | Verificación integral del repositorio, `docs/trazabilidad-plan-codigo.md`, `docs/publicacion.md`, etiquetas y sección "Publicación pendiente". |
+| `prompts/13-verificacion-final-y-publicacion.md` | completado | `ccb7912` | 2026-11-20 | Verificación integral del repositorio (andamiaje A1–A4 intacto en `main`, 4 pruebas con `@Disabled`, `lychee --offline` con 207 enlaces y 0 errores, tabla de tiempos y memoria en `docs/instalacion/README.md`), creación de `docs/trazabilidad-plan-codigo.md` (16 secciones 1.1 a 4.4 con evidencia ejecutable) y `docs/publicacion.md`, etiquetas `s1`…`s6` verificadas y sección "Publicación pendiente" documentada abajo. |
+
+---
+
+## Publicación pendiente
+
+De acuerdo con las reglas de ejecución del orquestador (prohibido ejecutar `git push`, cambiar configuración de GitHub o crear releases), a continuación se listan los **comandos exactos, en orden**, para que usted publique el repositorio en GitHub, configure la protección de ramas y publique cada rama de solución cuando corresponda:
+
+```powershell
+# 1. Ubicarse en la raíz del repositorio en la rama main
+cd c:\Jorge-Projects\mre_arquitectura\mrree-arquitectura-software
+git checkout main
+
+# 2. Crear el repositorio remoto en GitHub (reemplace <organizacion-o-docente> por su cuenta u organización)
+gh repo create <organizacion-o-docente>/mrree-arquitectura-software --public --description "Plataforma Digital de Servicios Consulares y de Legalización — Curso Arquitectura de Software y Diseño de Soluciones (UTEC Posgrado – MRREE)"
+
+# 3. Registrar o actualizar la URL del remoto origin
+git remote add origin https://github.com/<organizacion-o-docente>/mrree-arquitectura-software.git
+# (Si el remoto origin ya existía, use en su lugar:)
+# git remote set-url origin https://github.com/<organizacion-o-docente>/mrree-arquitectura-software.git
+
+# 4. Publicar la rama principal (main), la rama de demostración (demo/strangler) y las etiquetas de sesión (s1 a s6)
+git push -u origin main
+git push -u origin demo/strangler
+git push origin --tags
+
+# 5. Configurar la protección de la rama main en GitHub (bloqueando force-push y borrado)
+gh api --method PUT "repos/<organizacion-o-docente>/mrree-arquitectura-software/branches/main/protection" `
+  -H "Accept: application/vnd.github+json" `
+  -F "required_linear_history=true" `
+  -F "allow_force_pushes=false" `
+  -F "allow_deletions=false" `
+  -F "enforce_admins=false" `
+  -f "required_pull_request_reviews=null" `
+  -f "restrictions=null"
+
+# 6. Publicar cada rama de solución ÚNICAMENTE después del cierre de entrega de cada asignación:
+#    - Tras cierre de A1 (inicio de Sesión 3):
+git push -u origin solucion/a1
+#    - Tras cierre de A2 (inicio de Sesión 4):
+git push -u origin solucion/a2
+#    - Tras cierre de A3 (inicio de Sesión 5):
+git push -u origin solucion/a3
+#    - Tras cierre de A4 (inicio de Sesión 6):
+git push -u origin solucion/a4
+```
+

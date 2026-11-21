@@ -33,9 +33,11 @@ Cada módulo es **autocontenido**, se ubica en su propia carpeta, posee su propi
 - [**Paso 5 — Modo Híbrido (Eclipse + Docker) y Flujo de Entrega**](docs/instalacion/05-modo-hibrido-y-entrega.md)
 - [**Solución de Problemas Frecuentes (*Troubleshooting*)**](docs/instalacion/solucion-de-problemas.md)
 
-### 2.2 Especificación, Glosario, DDD y Contratos
+### 2.2 Especificación, Glosario, Trazabilidad, DDD y Contratos
 - [**Contrato Global de la Aplicación (Fuente de Verdad)**](docs/especificacion/contrato-global.md)
 - [**Glosario Técnico del Curso (Secciones 1.1 a 4.4)**](docs/glosario.md)
+- [**Matriz de Trazabilidad Plan del Curso ↔ Código Fuente (`1.1` – `4.4`)**](docs/trazabilidad-plan-codigo.md)
+- [**Guía del Docente para Publicación en GitHub**](docs/publicacion.md)
 - [**DDD Estratégico — Mapa de Contextos (*Context Map*)**](docs/ddd/context-map.md)
 - [**DDD Estratégico — Lenguaje Ubicuo por Contexto Delimitado**](docs/ddd/lenguaje-ubicuo.md)
 - [**Contrato de Eventos Asíncronos (AsyncAPI 2.6)**](docs/contratos/asyncapi.yaml)

@@ -330,7 +330,6 @@ networks:
     name: m1_frontal
   datos:
     name: m1_datos
-    internal: true
 
 volumes:
   m1_postgres_data:
